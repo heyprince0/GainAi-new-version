@@ -61,13 +61,47 @@ export function BodyScanner() {
     []
   )
 
-  const handleAnalyze = useCallback(() => {
+  const handleAnalyze = useCallback(async () => {
+    if (!image) return
     setScanning(true)
-    setTimeout(() => {
+    try {
+      const base64Image = image.split(",")[1]
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.NEXT_PUBLIC_GOOGLE_API_KEY}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: [
+              {
+                parts: [
+                  {
+                    inlineData: {
+                      mimeType: "image/jpeg",
+                      data: base64Image,
+                    },
+                  },
+                  {
+                    text: `Analyze this body composition photo and provide fitness insights. Respond with a JSON object containing: bodyFatPercent (estimated number 8-35), category (Athletic/Average/Needs Work), bmi (estimated number 18-30), muscleMass (Above Average/Average/Below Average), recommendations (array of 4 actionable improvement tips), composition (array of 4 objects with label, value, color where labels are Muscle/Fat/Bone/Water and values sum to 100). Only return the JSON object, nothing else.`,
+                  },
+                ],
+              },
+            ],
+          }),
+        }
+      )
+
+      const data = await response.json()
+      const content = data.candidates[0].content.parts[0].text
+      const parsed = JSON.parse(content)
+      setResults(parsed)
+    } catch (error) {
+      console.error("Error analyzing body:", error)
       setResults(sampleResult)
+    } finally {
       setScanning(false)
-    }, 2500)
-  }, [])
+    }
+  }, [image])
 
   const handleReset = useCallback(() => {
     setImage(null)

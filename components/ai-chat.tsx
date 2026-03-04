@@ -39,7 +39,7 @@ export function AiChat() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
   }, [messages])
 
-  const handleSend = useCallback(() => {
+  const handleSend = useCallback(async () => {
     if (!input.trim() || loading) return
 
     const userMsg: Message = {
@@ -51,18 +51,50 @@ export function AiChat() {
     setInput("")
     setLoading(true)
 
-    setTimeout(() => {
-      const response =
-        coachResponses[Math.floor(Math.random() * coachResponses.length)]
+    try {
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.NEXT_PUBLIC_GOOGLE_API_KEY}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            system: {
+              instructions:
+                "You are GainAi Coach, an expert fitness and nutrition AI assistant. You provide personalized advice on workouts, nutrition, body composition, and fitness goals. Be encouraging, knowledgeable, and practical in your responses. Keep responses concise (2-3 sentences) and actionable.",
+            },
+            contents: messages
+              .concat(userMsg)
+              .map((msg) => ({
+                role: msg.role === "assistant" ? "model" : "user",
+                parts: [{ text: msg.content }],
+              })),
+          }),
+        }
+      )
+
+      const data = await response.json()
+      const aiResponse =
+        data.candidates[0].content.parts[0].text ||
+        "Sorry, I had trouble processing that. Try again!"
       const assistantMsg: Message = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
-        content: response,
+        content: aiResponse,
       }
       setMessages((prev) => [...prev, assistantMsg])
+    } catch (error) {
+      console.error("Error fetching AI response:", error)
+      const fallback: Message = {
+        id: (Date.now() + 1).toString(),
+        role: "assistant",
+        content:
+          coachResponses[Math.floor(Math.random() * coachResponses.length)],
+      }
+      setMessages((prev) => [...prev, fallback])
+    } finally {
       setLoading(false)
-    }, 1200)
-  }, [input, loading])
+    }
+  }, [input, loading, messages])
 
   return (
     <>

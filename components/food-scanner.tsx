@@ -68,13 +68,47 @@ export function FoodScanner() {
     []
   )
 
-  const handleScan = useCallback(() => {
+  const handleScan = useCallback(async () => {
+    if (!image) return
     setScanning(true)
-    setTimeout(() => {
+    try {
+      const base64Image = image.split(",")[1]
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.NEXT_PUBLIC_GOOGLE_API_KEY}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: [
+              {
+                parts: [
+                  {
+                    inlineData: {
+                      mimeType: "image/jpeg",
+                      data: base64Image,
+                    },
+                  },
+                  {
+                    text: `Analyze this food image and provide detailed nutritional information. For each food item detected, respond with a JSON array containing objects with these fields: name (string), calories (number), protein (number), carbs (number), fats (number), fiber (number), servingSize (string). Be specific and accurate. Only return the JSON array, nothing else.`,
+                  },
+                ],
+              },
+            ],
+          }),
+        }
+      )
+
+      const data = await response.json()
+      const content = data.candidates[0].content.parts[0].text
+      const parsed = JSON.parse(content)
+      setResults(Array.isArray(parsed) ? parsed : [parsed])
+    } catch (error) {
+      console.error("Error analyzing food:", error)
       setResults(sampleResults)
+    } finally {
       setScanning(false)
-    }, 2000)
-  }, [])
+    }
+  }, [image])
 
   const handleReset = useCallback(() => {
     setImage(null)
