@@ -58,8 +58,13 @@ export function AiChat() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            system:
-              "You are GainAi Coach, an expert fitness and nutrition AI assistant. You provide personalized advice on workouts, nutrition, body composition, and fitness goals. Be encouraging, knowledgeable, and practical in your responses. Keep responses concise (2-3 sentences) and actionable.",
+            systemInstruction: {
+              parts: [
+                {
+                  text: "You are GainAi Coach, an expert fitness and nutrition AI assistant. You provide personalized advice on workouts, nutrition, body composition, and fitness goals. Be encouraging, knowledgeable, and practical in your responses. Keep responses concise (2-3 sentences) and actionable.",
+                },
+              ],
+            },
             contents: messages
               .concat(userMsg)
               .map((msg) => ({
@@ -71,15 +76,17 @@ export function AiChat() {
       )
 
       const data = await response.json()
-      console.log("[v0] API Response:", data)
 
-      if (!data.candidates || !data.candidates[0] || !data.candidates[0].content) {
-        throw new Error("Invalid API response structure")
+      if (data.error) {
+        console.error("[v0] API Error:", data.error.message)
+        throw new Error(data.error.message)
       }
 
-      const aiResponse =
-        data.candidates[0].content.parts[0].text ||
-        "Sorry, I had trouble processing that. Try again!"
+      if (!data.candidates || !data.candidates[0]?.content?.parts?.[0]?.text) {
+        throw new Error("No response from AI")
+      }
+
+      const aiResponse = data.candidates[0].content.parts[0].text
       const assistantMsg: Message = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
