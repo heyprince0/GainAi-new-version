@@ -23,6 +23,7 @@ export function FoodScanner() {
   const [results, setResults] = useState<FoodResult[] | null>(null)
   const [error, setError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const cameraInputRef = useRef<HTMLInputElement>(null)
 
   const handleUpload = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -99,6 +100,7 @@ export function FoodScanner() {
     setResults(null)
     setError(null)
     if (fileInputRef.current) fileInputRef.current.value = ""
+    if (cameraInputRef.current) cameraInputRef.current.value = ""
   }, [])
 
   const totalCalories = results
@@ -130,10 +132,7 @@ export function FoodScanner() {
         <Card className="overflow-hidden border-border/50">
           <CardContent className="p-0">
             {!image ? (
-              <label
-                htmlFor="food-upload"
-                className="flex cursor-pointer flex-col items-center justify-center gap-4 p-12 transition-colors hover:bg-muted/50"
-              >
+              <div className="flex flex-col items-center justify-center gap-4 p-12">
                 <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 text-primary">
                   <Camera className="h-8 w-8" />
                 </div>
@@ -145,19 +144,42 @@ export function FoodScanner() {
                     JPG, PNG up to 10MB
                   </p>
                 </div>
-                <Button variant="outline" size="sm" className="rounded-lg">
-                  <Upload className="mr-2 h-3.5 w-3.5" />
-                  Choose File
-                </Button>
+                <div className="flex gap-3">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="rounded-lg"
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    <Upload className="mr-2 h-3.5 w-3.5" />
+                    Upload Image
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="rounded-lg"
+                    onClick={() => cameraInputRef.current?.click()}
+                  >
+                    <Camera className="mr-2 h-3.5 w-3.5" />
+                    Take Photo
+                  </Button>
+                </div>
                 <input
                   ref={fileInputRef}
-                  id="food-upload"
                   type="file"
                   accept="image/*"
                   className="sr-only"
                   onChange={handleUpload}
                 />
-              </label>
+                <input
+                  ref={cameraInputRef}
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  className="sr-only"
+                  onChange={handleUpload}
+                />
+              </div>
             ) : (
               <div className="relative">
                 <img
