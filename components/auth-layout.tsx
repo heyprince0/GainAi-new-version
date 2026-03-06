@@ -2,10 +2,11 @@
 
 import { useAuth } from '@/lib/auth-context'
 import { AuthScreen } from './auth-screen'
+import { ProfileSetup } from './profile-setup'
 import { AiChat } from './ai-chat'
 
 export function AuthLayout({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuth()
+  const { user, loading, hasProfile } = useAuth()
 
   if (loading) {
     return (
@@ -20,6 +21,10 @@ export function AuthLayout({ children }: { children: React.ReactNode }) {
 
   if (!user) {
     return <AuthScreen />
+  }
+
+  if (!hasProfile) {
+    return <ProfileSetup />
   }
 
   return (

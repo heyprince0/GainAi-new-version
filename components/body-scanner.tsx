@@ -7,6 +7,8 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
+import { supabase } from "@/lib/supabase"
+import { useAuth } from "@/lib/auth-context"
 
 const API_KEY = "AIzaSyDHvGYDhy3ixuyPEqPR2oXYZF3GC7ellVk"
 
@@ -24,6 +26,7 @@ interface BodyResult {
 }
 
 export function BodyScanner() {
+  const { user } = useAuth()
   const [image, setImage] = useState<string | null>(null)
   const [scanning, setScanning] = useState(false)
   const [results, setResults] = useState<BodyResult | null>(null)
@@ -92,6 +95,20 @@ export function BodyScanner() {
       const cleanText = rawText.replace(/```json|```/g, "").trim()
       const parsed = JSON.parse(cleanText)
       setResults(parsed)
+
+      // Save to Supabase
+      if (user) {
+        await supabase.from('body_scans').insert({
+          user_id: user.id,
+          body_fat_percent: parsed.bodyFatPercent,
+          category: parsed.category,
+          bmi: parsed.bmi,
+          muscle_mass: parsed.muscleMass,
+          recommendations: parsed.recommendations,
+          composition: parsed.composition,
+          image_url: image,
+        })
+      }
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : "Failed to analyze body"
       setError(errorMsg)

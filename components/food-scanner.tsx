@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { cn } from "@/lib/utils"
+import { supabase } from "@/lib/supabase"
+import { useAuth } from "@/lib/auth-context"
 
 const API_KEY = "AIzaSyDHvGYDhy3ixuyPEqPR2oXYZF3GC7ellVk"
 
@@ -20,6 +22,7 @@ interface FoodResult {
 }
 
 export function FoodScanner() {
+  const { user } = useAuth()
   const [image, setImage] = useState<string | null>(null)
   const [scanning, setScanning] = useState(false)
   const [results, setResults] = useState<FoodResult[] | null>(null)
@@ -87,7 +90,26 @@ export function FoodScanner() {
       const rawText = data.candidates[0].content.parts[0].text
       const cleanText = rawText.replace(/```json|```/g, "").trim()
       const parsed = JSON.parse(cleanText)
-      setResults(Array.isArray(parsed) ? parsed : [parsed])
+      const foodResults = Array.isArray(parsed) ? parsed : [parsed]
+      setResults(foodResults)
+
+      // Save to Supabase
+      if (user && foodResults.length > 0) {
+        const totalCalories = foodResults.reduce((sum, f) => sum + f.calories, 0)
+        const totalProtein = foodResults.reduce((sum, f) => sum + f.protein, 0)
+        const totalCarbs = foodResults.reduce((sum, f) => sum + f.carbs, 0)
+        const totalFats = foodResults.reduce((sum, f) => sum + f.fats, 0)
+
+        await supabase.from('food_scans').insert({
+          user_id: user.id,
+          foods: foodResults,
+          total_calories: totalCalories,
+          total_protein: totalProtein,
+          total_carbs: totalCarbs,
+          total_fats: totalFats,
+          image_url: image,
+        })
+      }
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : "Failed to analyze food"
       setError(errorMsg)
