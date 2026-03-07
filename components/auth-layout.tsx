@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { useAuth } from '@/lib/auth-context'
 import { AuthScreen } from './auth-screen'
@@ -8,33 +8,42 @@ import { ProfileSetup } from './profile-setup'
 import { AiChat } from './ai-chat'
 
 export function AuthLayout({ children }: { children: React.ReactNode }) {
-  const { user, loading, hasProfile, intendedRoute } = useAuth()
+  const { user, loading, hasProfile } = useAuth()
   const router = useRouter()
   const pathname = usePathname()
+  const [showAuthScreen, setShowAuthScreen] = useState(false)
 
   useEffect(() => {
     if (loading) return
 
-    // Unauthenticated users can view home page and public content
-    if (!user) {
-      // Allow home page access, redirect scanners to login
-      if (pathname.includes('food-scanner') || pathname.includes('body-scanner') || pathname.includes('dashboard')) {
-        router.push('/')
-      }
+    const isProtectedRoute = pathname.includes('food-scanner') || pathname.includes('body-scanner') || pathname.includes('dashboard')
+    const isHomePage = pathname === '/'
+
+    // Unauthenticated user trying to access protected route
+    if (!user && isProtectedRoute) {
+      setShowAuthScreen(true)
       return
     }
 
-    // Authenticated users without profile should see setup form
-    if (!hasProfile) {
-      if (pathname !== '/' && !pathname.includes('food-scanner') && !pathname.includes('body-scanner')) {
-        return
-      }
+    // Authenticated user without profile setup
+    if (user && !hasProfile && !isProtectedRoute) {
+      setShowAuthScreen(false)
+      return
     }
 
-    // Authenticated users with profile should go to dashboard
-    if (user && hasProfile && pathname === '/') {
+    // Authenticated user with profile on home page
+    if (user && hasProfile && isHomePage) {
       router.push('/dashboard')
+      return
     }
+
+    // Home page for unauthenticated users is allowed
+    if (!user && isHomePage) {
+      setShowAuthScreen(false)
+      return
+    }
+
+    setShowAuthScreen(false)
   }, [user, loading, hasProfile, pathname, router])
 
   if (loading) {
@@ -48,18 +57,21 @@ export function AuthLayout({ children }: { children: React.ReactNode }) {
     )
   }
 
-  if (!user) {
+  // Show auth screen when user tries to access protected route without being logged in
+  if (showAuthScreen) {
     return <AuthScreen />
   }
 
-  if (!hasProfile) {
+  // Show profile setup for authenticated users without profile
+  if (user && !hasProfile) {
     return <ProfileSetup />
   }
 
+  // Show main app content (home or protected pages)
   return (
     <>
       {children}
-      <AiChat />
+      {user && hasProfile && <AiChat />}
     </>
   )
 }
