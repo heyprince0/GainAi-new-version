@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useRef, useCallback } from "react"
+import { useRouter } from "next/navigation"
 import { Upload, Camera, ScanLine, X, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -27,6 +28,8 @@ export function FoodScanner() {
   const [scanning, setScanning] = useState(false)
   const [results, setResults] = useState<FoodResult[] | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [saved, setSaved] = useState(false)
+  const [saveMessage, setSaveMessage] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
   const cameraInputRef = useRef<HTMLInputElement>(null)
 
@@ -93,23 +96,9 @@ export function FoodScanner() {
       const foodResults = Array.isArray(parsed) ? parsed : [parsed]
       setResults(foodResults)
 
-      // Save to Supabase
-      if (user && foodResults.length > 0) {
-        const totalCalories = foodResults.reduce((sum, f) => sum + f.calories, 0)
-        const totalProtein = foodResults.reduce((sum, f) => sum + f.protein, 0)
-        const totalCarbs = foodResults.reduce((sum, f) => sum + f.carbs, 0)
-        const totalFats = foodResults.reduce((sum, f) => sum + f.fats, 0)
-
-        await supabase.from('food_scans').insert({
-          user_id: user.id,
-          foods: foodResults,
-          total_calories: totalCalories,
-          total_protein: totalProtein,
-          total_carbs: totalCarbs,
-          total_fats: totalFats,
-          image_url: image,
-        })
-      }
+      // results are set, saving happens via button instead of automatically
+      setSaved(false)
+      setSaveMessage('')
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : "Failed to analyze food"
       setError(errorMsg)
@@ -123,6 +112,8 @@ export function FoodScanner() {
     setImage(null)
     setResults(null)
     setError(null)
+    setSaved(false)
+    setSaveMessage('')
     if (fileInputRef.current) fileInputRef.current.value = ""
     if (cameraInputRef.current) cameraInputRef.current.value = ""
   }, [])
@@ -139,6 +130,44 @@ export function FoodScanner() {
   const totalFats = results
     ? results.reduce((acc, r) => acc + r.fats, 0)
     : 0
+
+  const router = useRouter()
+
+  const handleSave = async () => {
+    if (!user || !results || results.length === 0) return
+    setSaved(true)
+    try {
+      // build insert object that covers both old and new schemas
+      const now = new Date().toISOString()
+      const insert: any = { user_id: user.id, scanned_at: now }
+      if (results.length === 1) {
+        const res = results[0]
+        insert.food_name = res.name
+        insert.calories = res.calories
+        insert.protein = res.protein
+        insert.carbs = res.carbs
+        insert.fats = res.fats
+        insert.fiber = res.fiber ?? 0
+      }
+      // always include totals and array in case table expects them
+      insert.total_calories = totalCalories
+      insert.total_protein = totalProtein
+      insert.total_carbs = totalCarbs
+      insert.total_fats = totalFats
+      insert.foods = results
+      insert.image_url = image
+
+      const { error } = await supabase.from('food_scans').insert(insert)
+      if (error) throw error
+      setSaveMessage('✅ Saved to Dashboard!')
+      // refresh dashboard data if user navigates back
+      router.refresh()
+    } catch (err) {
+      setSaveMessage('Failed to save')
+      setSaved(false)
+      console.error(err)
+    }
+  }
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-10 lg:px-6">
@@ -309,6 +338,27 @@ export function FoodScanner() {
                 <FoodResultCard key={food.name} food={food} />
               ))}
 
+              {saveMessage && (
+                <p className="text-sm text-green-600">{saveMessage}</p>
+              )}
+              {!saved && (
+                <Button
+                  variant="outline"
+                  className="rounded-xl bg-green-100 text-green-800"
+                  onClick={handleSave}
+                >
+                  Save to Dashboard
+                </Button>
+              )}
+              {saved && (
+                <Button
+                  variant="outline"
+                  disabled
+                  className="rounded-xl"
+                >
+                  Saved ✅
+                </Button>
+              )}
               <Button
                 variant="outline"
                 onClick={handleReset}

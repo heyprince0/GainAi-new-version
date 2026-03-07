@@ -25,17 +25,24 @@ interface Profile {
 interface FoodScan {
   id: string
   scanned_at: string
-  total_calories: number
-  total_protein: number
-  total_carbs: number
-  total_fats: number
-  foods: any[]
+  total_calories?: number
+  calories?: number
+  total_protein?: number
+  protein?: number
+  total_carbs?: number
+  carbs?: number
+  total_fats?: number
+  fats?: number
+  foods?: any[]
+  food_name?: string
+  fiber?: number
 }
 
 interface BodyScan {
   id: string
   scanned_at: string
-  body_fat_percent: number
+  body_fat_percent?: number
+  body_fat?: number
 }
 
 export function Dashboard() {
@@ -89,10 +96,23 @@ export function Dashboard() {
         const todayScans = foodData?.filter(
           (scan) => scan.scanned_at?.startsWith(today)
         ) || []
-        const todayCalories = todayScans?.reduce((sum, scan) => sum + (scan?.total_calories ?? 0), 0) ?? 0
-        const todayProtein = todayScans?.reduce((sum, scan) => sum + (scan?.total_protein ?? 0), 0) ?? 0
-        const totalCarbs = todayScans?.reduce((sum, scan) => sum + (scan?.total_carbs ?? 0), 0) ?? 0
-        const totalFats = todayScans?.reduce((sum, scan) => sum + (scan?.total_fats ?? 0), 0) ?? 0
+        const totalCalories = todayScans.reduce(
+          (sum, scan) =>
+            sum + ((scan.total_calories ?? scan.calories) || 0),
+          0
+        )
+        const totalProtein = todayScans.reduce(
+          (sum, scan) => sum + ((scan.total_protein ?? scan.protein) || 0),
+          0
+        )
+        const totalCarbs = todayScans.reduce(
+          (sum, scan) => sum + ((scan.total_carbs ?? scan.carbs) || 0),
+          0
+        )
+        const totalFats = todayScans.reduce(
+          (sum, scan) => sum + ((scan.total_fats ?? scan.fats) || 0),
+          0
+        )
 
         setTodayStats({ calories: todayCalories, protein: todayProtein, carbs: totalCarbs, fats: totalFats })
       } catch (error) {
@@ -208,7 +228,7 @@ export function Dashboard() {
                         {scan?.scanned_at ? new Date(scan.scanned_at).toLocaleDateString() : 'N/A'}
                       </span>
                       <span className='text-sm font-semibold'>
-                        {scan?.total_calories ?? 0} kcal
+                        {(scan?.total_calories ?? scan?.calories ?? 0)} kcal
                       </span>
                     </div>
                   ))}
@@ -254,14 +274,14 @@ export function Dashboard() {
                     </div>
                     <div className='flex-1'>
                       <p className='text-sm font-medium text-foreground'>
-                        {scan.foods?.[0]?.name || 'Food Scan'}
+                        {scan.foods?.[0]?.name || scan.food_name || 'Food Scan'}
                       </p>
                       <p className='text-xs text-muted-foreground'>
                         {scan?.scanned_at ? new Date(scan.scanned_at).toLocaleString() : 'N/A'}
                       </p>
                     </div>
                     <span className='text-sm font-semibold text-foreground'>
-                      {scan?.total_calories ?? 0} kcal
+                      {(scan?.total_calories ?? scan?.calories ?? 0)} kcal
                     </span>
                   </div>
                 ))
@@ -288,7 +308,7 @@ export function Dashboard() {
                         Body Fat
                       </span>
                       <span className='text-sm font-semibold text-foreground'>
-                        {bodyScan.body_fat_percent}%
+                        {(bodyScan.body_fat_percent ?? bodyScan.body_fat) ?? 'N/A'}%
                       </span>
                     </div>
                     <div className='flex items-center justify-between rounded-lg bg-muted/50 px-3 py-2.5'>
@@ -327,7 +347,7 @@ export function Dashboard() {
                     <span className='text-sm font-semibold text-foreground'>
                       {foodScans.length > 0
                         ? Math.round(
-                            foodScans.reduce((sum, s) => sum + (s?.total_calories || 0), 0) /
+                            foodScans.reduce((sum, s) => sum + ((s?.total_calories ?? s?.calories) || 0), 0) /
                               Math.ceil(
                                 (new Date().getTime() -
                                   new Date(foodScans[foodScans.length - 1]?.scanned_at ?? '').getTime()) /

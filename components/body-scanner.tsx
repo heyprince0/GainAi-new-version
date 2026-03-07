@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useRef, useCallback } from "react"
+import { useRouter } from "next/navigation"
 import { Upload, Activity, X, Loader2, TrendingUp, TrendingDown, Minus, Camera } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -31,6 +32,8 @@ export function BodyScanner() {
   const [scanning, setScanning] = useState(false)
   const [results, setResults] = useState<BodyResult | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [saved, setSaved] = useState(false)
+  const [saveMessage, setSaveMessage] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
   const cameraInputRef = useRef<HTMLInputElement>(null)
 
@@ -96,19 +99,9 @@ export function BodyScanner() {
       const parsed = JSON.parse(cleanText)
       setResults(parsed)
 
-      // Save to Supabase
-      if (user) {
-        await supabase.from('body_scans').insert({
-          user_id: user.id,
-          body_fat_percent: parsed.bodyFatPercent,
-          category: parsed.category,
-          bmi: parsed.bmi,
-          muscle_mass: parsed.muscleMass,
-          recommendations: parsed.recommendations,
-          composition: parsed.composition,
-          image_url: image,
-        })
-      }
+      // results are available; saving deferred to button
+      setSaved(false)
+      setSaveMessage('')
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : "Failed to analyze body"
       setError(errorMsg)
@@ -118,10 +111,41 @@ export function BodyScanner() {
     }
   }, [image])
 
+  const router = useRouter()
+
+  const handleSave = async () => {
+    if (!user || !results) return
+    setSaved(true)
+    try {
+      const now = new Date().toISOString()
+      const insert: any = { user_id: user.id, scanned_at: now }
+      // map body result fields, support both old and new schemas
+      insert.body_fat_percent = results.bodyFatPercent
+      insert.body_fat = results.bodyFatPercent
+      insert.category = results.category
+      insert.bmi = results.bmi
+      insert.muscle_mass = results.muscleMass
+      insert.recommendations = results.recommendations
+      insert.composition = results.composition
+      insert.image_url = image
+
+      const { error } = await supabase.from('body_scans').insert(insert)
+      if (error) throw error
+      setSaveMessage('✅ Saved to Dashboard!')
+      router.refresh()
+    } catch (err) {
+      console.error(err)
+      setSaveMessage('Failed to save')
+      setSaved(false)
+    }
+  }
+
   const handleReset = useCallback(() => {
     setImage(null)
     setResults(null)
     setError(null)
+    setSaved(false)
+    setSaveMessage('')
     if (fileInputRef.current) fileInputRef.current.value = ""
     if (cameraInputRef.current) cameraInputRef.current.value = ""
   }, [])
@@ -370,6 +394,27 @@ export function BodyScanner() {
                 </CardContent>
               </Card>
 
+              {saveMessage && (
+                <p className="text-sm text-green-600">{saveMessage}</p>
+              )}
+              {!saved && (
+                <Button
+                  variant="outline"
+                  className="rounded-xl bg-green-100 text-green-800"
+                  onClick={handleSave}
+                >
+                  Save to Dashboard
+                </Button>
+              )}
+              {saved && (
+                <Button
+                  variant="outline"
+                  disabled
+                  className="rounded-xl"
+                >
+                  Saved ✅
+                </Button>
+              )}
               <Button
                 variant="outline"
                 onClick={handleReset}
