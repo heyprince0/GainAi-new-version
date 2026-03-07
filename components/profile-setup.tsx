@@ -13,8 +13,6 @@ interface ProfileFormData {
   weight: number
   height: number
   goal: 'lose' | 'maintain' | 'gain'
-  dailyCalories: number
-  dailyProtein: number
 }
 
 export function ProfileSetup() {
@@ -27,8 +25,6 @@ export function ProfileSetup() {
     weight: 70,
     height: 175,
     goal: 'maintain',
-    dailyCalories: 2000,
-    dailyProtein: 150,
   })
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -39,6 +35,45 @@ export function ProfileSetup() {
     try {
       if (!user) throw new Error('User not authenticated')
 
+      // first call the Gemini API (key stored in env as NEXT_PUBLIC_GEMINI_API_KEY)
+      let calorie_goal = 0
+      let protein_goal = 0
+
+      try {
+        const prompt = `
+Based on this person's stats, calculate their daily calorie and protein goals:
+- Age: ${formData.age}
+- Weight: ${formData.weight}kg
+- Height: ${formData.height}cm
+- Fitness Goal: ${formData.goal}
+
+Respond ONLY with this exact JSON, no markdown:
+{
+  "calorie_goal": <number>,
+  "protein_goal": <number>
+}
+`
+        const response = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.NEXT_PUBLIC_GEMINI_API_KEY}`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
+          }
+        )
+        const data = await response.json()
+        const raw = data.candidates?.[0]?.content?.parts?.[0]?.text || ''
+        const clean = raw.replace(/```json|```/g, '').trim()
+        const goals = JSON.parse(clean)
+        calorie_goal = goals.calorie_goal
+        protein_goal = goals.protein_goal
+      } catch (aiErr) {
+        console.error('Failed to fetch goals from Gemini', aiErr)
+        // fallback to defaults if the AI call fails
+        calorie_goal = 2000
+        protein_goal = 150
+      }
+
       const { error: err } = await supabase
         .from('profiles')
         .insert({
@@ -48,8 +83,8 @@ export function ProfileSetup() {
           weight: parseFloat(formData.weight.toString()),
           height: parseFloat(formData.height.toString()),
           goal: formData.goal,
-          calorie_goal: parseInt(formData.dailyCalories.toString()),
-          protein_goal: parseInt(formData.dailyProtein.toString()),
+          calorie_goal,
+          protein_goal,
         })
 
       if (err) throw err
@@ -151,36 +186,6 @@ export function ProfileSetup() {
               </select>
             </div>
 
-            <div className='grid grid-cols-2 gap-3'>
-              <div>
-                <label className='block text-sm font-medium text-foreground mb-1'>
-                  Daily Calories
-                </label>
-                <input
-                  type='number'
-                  value={formData.dailyCalories}
-                  onChange={(e) => setFormData({ ...formData, dailyCalories: parseInt(e.target.value) })}
-                  className='w-full rounded-lg border border-input bg-background px-3 py-2 text-sm'
-                  min='1000'
-                  step='100'
-                  required
-                />
-              </div>
-              <div>
-                <label className='block text-sm font-medium text-foreground mb-1'>
-                  Daily Protein (g)
-                </label>
-                <input
-                  type='number'
-                  value={formData.dailyProtein}
-                  onChange={(e) => setFormData({ ...formData, dailyProtein: parseInt(e.target.value) })}
-                  className='w-full rounded-lg border border-input bg-background px-3 py-2 text-sm'
-                  min='50'
-                  step='10'
-                  required
-                />
-              </div>
-            </div>
 
             {error && (
               <div className='rounded-lg border border-red-500/50 bg-red-500/5 p-3'>

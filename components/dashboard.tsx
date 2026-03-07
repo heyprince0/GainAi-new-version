@@ -17,6 +17,7 @@ interface Profile {
   weight: number
   height: number
   goal: string
+  // renamed fields for goals stored in Supabase
   calorie_goal: number
   protein_goal: number
   created_at: string
@@ -50,6 +51,12 @@ export function Dashboard() {
   const [profile, setProfile] = useState<Profile | null>(null)
   const [foodScans, setFoodScans] = useState<FoodScan[]>([])
   const [bodyScan, setBodyScan] = useState<BodyScan | null>(null)
+  // compute displayName with fallbacks
+  const displayName = profile?.name ||
+    user?.user_metadata?.full_name ||
+    user?.user_metadata?.name ||
+    user?.email?.split('@')[0] ||
+    'User'
   const [todayStats, setTodayStats] = useState({ calories: 0, protein: 0, carbs: 0, fats: 0 })
   const [loading, setLoading] = useState(true)
 
@@ -69,6 +76,7 @@ export function Dashboard() {
           console.error('Profile error:', profileError)
         }
         if (profileData) setProfile(profileData)
+        // if profileData doesn't contain a name we may still fallback later
 
         // Fetch food scans
         const { data: foodData, error: foodError } = await supabase
@@ -133,12 +141,16 @@ export function Dashboard() {
     )
   }
 
-  if (!profile) return null
+  if (!profile) return null // wait until profile is loaded
 
-  const calPercent = Math.round((todayStats.calories / profile.daily_calories) * 100)
-  const proteinPercent = Math.round((todayStats.protein / profile.daily_protein) * 100)
-  const initials = profile.full_name
-    ?.split(' ')
+  const calPercent = profile.calorie_goal
+    ? Math.round((todayStats.calories / profile.calorie_goal) * 100)
+    : 0
+  const proteinPercent = profile.protein_goal
+    ? Math.round((todayStats.protein / profile.protein_goal) * 100)
+    : 0
+  const initials = (profile.name || displayName)
+    .split(' ')
     .map((n) => n[0])
     .join('') || ''
 
@@ -153,7 +165,7 @@ export function Dashboard() {
         </Avatar>
         <div>
           <h1 className='text-2xl font-bold tracking-tight text-foreground'>
-            Welcome back, {profile.full_name}
+            Welcome back, {displayName}
           </h1>
           <p className="text-sm text-muted-foreground">
             {"Here's your fitness overview"}
@@ -167,14 +179,14 @@ export function Dashboard() {
           icon={Flame}
           label="Today's Calories"
           value={todayStats.calories.toString()}
-          subtitle={`of ${(profile.daily_calories ?? 0).toLocaleString()} goal`}
+          subtitle={`of ${(profile.calorie_goal ?? 0).toLocaleString()} goal`}
           progress={calPercent}
         />
         <StatCard
           icon={Target}
           label='Protein'
           value={`${todayStats.protein}g`}
-          subtitle={`of ${profile.daily_protein}g goal`}
+          subtitle={`of ${profile.protein_goal}g goal`}
           progress={proteinPercent}
         />
         <StatCard
@@ -186,7 +198,7 @@ export function Dashboard() {
         <StatCard
           icon={Activity}
           label='Body Fat'
-          value={bodyScan ? `${bodyScan.body_fat_percent}%` : 'N/A'}
+          value={bodyScan?.body_fat ? `${bodyScan.body_fat}%` : 'No scan yet'}
           subtitle='latest reading'
         />
       </div>
@@ -246,7 +258,7 @@ export function Dashboard() {
                   <MacroRow
                     label='Protein'
                     current={todayStats.protein}
-                    goal={profile.daily_protein}
+                    goal={profile.protein_goal}
                   />
                   <MacroRow
                     label='Carbs'
@@ -308,7 +320,7 @@ export function Dashboard() {
                         Body Fat
                       </span>
                       <span className='text-sm font-semibold text-foreground'>
-                        {(bodyScan.body_fat_percent ?? bodyScan.body_fat) ?? 'N/A'}%
+                        {(bodyScan.body_fat ?? bodyScan.body_fat_percent) ?? 'N/A'}%
                       </span>
                     </div>
                     <div className='flex items-center justify-between rounded-lg bg-muted/50 px-3 py-2.5'>
