@@ -32,6 +32,30 @@ interface BodyResult {
   }[]
 }
 
+// helper moved outside component for reuse and to avoid redefinition
+function getBodyTypeColor(type?: string) {
+  switch (type) {
+    case 'Athletic':
+      return { bg: '#00ff88', text: '#000' }
+    case 'Mesomorph':
+      return { bg: '#22c55e', text: '#000' }
+    case 'Ectomorph':
+      return { bg: '#3b82f6', text: '#fff' }
+    case 'Skinny':
+      return { bg: '#60a5fa', text: '#000' }
+    case 'Endomorph':
+      return { bg: '#f97316', text: '#000' }
+    case 'Overweight':
+      return { bg: '#fb923c', text: '#000' }
+    case 'Fat':
+      return { bg: '#ef4444', text: '#fff' }
+    case 'Obese':
+      return { bg: '#dc2626', text: '#fff' }
+    default:
+      return { bg: '#6b7280', text: '#fff' }
+  }
+}
+
 export function BodyScanner() {
   const { user } = useAuth()
   const [image, setImage] = useState<string | null>(null)
@@ -42,6 +66,9 @@ export function BodyScanner() {
   const [saveMessage, setSaveMessage] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
   const cameraInputRef = useRef<HTMLInputElement>(null)
+
+  // compute badgeColors even when results is null (fallback)
+  const badgeColors = getBodyTypeColor(results?.body_type)
 
   const handleUpload = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -251,47 +278,7 @@ export function BodyScanner() {
 
         {/* Results / Action */}
         <div className="flex flex-col gap-4">
-          {image && !results && (
-            <Button
-              onClick={handleAnalyze}
-              disabled={scanning}
-              size="lg"
-              className="rounded-xl text-base font-semibold shadow-lg shadow-primary/25"
-            >
-              {scanning ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Analyzing...
-                </>
-              ) : (
-                <>
-                  <Activity className="mr-2 h-4 w-4" />
-                  Analyze Body
-                </>
-              )}
-            </Button>
-          )}
-
-          {scanning && (
-            <Card className="border-border/50">
-              <CardContent className="flex flex-col items-center gap-3 p-8">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                <p className="text-sm font-medium text-muted-foreground">
-                  AI is analyzing your body composition...
-                </p>
-              </CardContent>
-            </Card>
-          )}
-
-          {error && (
-            <Card className="border-red-500/50 bg-red-500/5">
-              <CardContent className="p-4">
-                <p className="text-sm text-red-600">Error: {error}</p>
-              </CardContent>
-            </Card>
-          )}
-
-          {results && (
+          {results ? (
             <>
               {/* Main Stats */}
               <Card className="border-primary/20 bg-primary/5">
@@ -300,36 +287,18 @@ export function BodyScanner() {
                     <p className="text-sm font-semibold text-foreground">
                       Body Analysis
                     </p>
-                    {(() => {
-                      const getBodyTypeColor = (type: string) => {
-                        switch (type) {
-                          case 'Athletic': return { bg: '#00ff88', text: '#000' }
-                          case 'Mesomorph': return { bg: '#22c55e', text: '#000' }
-                          case 'Ectomorph': return { bg: '#3b82f6', text: '#fff' }
-                          case 'Skinny': return { bg: '#60a5fa', text: '#000' }
-                          case 'Endomorph': return { bg: '#f97316', text: '#000' }
-                          case 'Overweight': return { bg: '#fb923c', text: '#000' }
-                          case 'Fat': return { bg: '#ef4444', text: '#fff' }
-                          case 'Obese': return { bg: '#dc2626', text: '#fff' }
-                          default: return { bg: '#6b7280', text: '#fff' }
-                        }
-                      }
-                      const colors = getBodyTypeColor(results.body_type)
-                      return (
-                        <div style={{
-                          display: 'inline-block',
-                          padding: '4px 14px',
-                          borderRadius: '20px',
-                          fontSize: '13px',
-                          fontWeight: '600',
-                          background: colors.bg,
-                          color: colors.text,
-                          marginTop: '8px'
-                        }}>
-                          {results.body_type || 'Unknown'}
-                        </div>
-                      )
-                    })()}
+                      <div style={{
+                      display: 'inline-block',
+                      padding: '4px 14px',
+                      borderRadius: '20px',
+                      fontSize: '13px',
+                      fontWeight: '600',
+                      background: badgeColors.bg,
+                      color: badgeColors.text,
+                      marginTop: '8px'
+                    }}>
+                      {results?.body_type || 'Unknown'}
+                    </div>
                   </div>
                   <div className="grid grid-cols-3 gap-4 text-center">
                     <div>
@@ -369,7 +338,7 @@ export function BodyScanner() {
 
                   {/* Stacked bar */}
                   <div className="mb-4 flex h-6 overflow-hidden rounded-full">
-                    {results.composition.map((item) => (
+                    {(results?.composition ?? []).map((item) => (
                       <div
                         key={item.label}
                         className={cn("transition-all", item.color)}
@@ -379,7 +348,7 @@ export function BodyScanner() {
                   </div>
 
                   <div className="grid grid-cols-2 gap-3">
-                    {results.composition.map((item) => (
+                    {(results?.composition ?? []).map((item) => (
                       <div
                         key={item.label}
                         className="flex items-center gap-2"
@@ -409,7 +378,7 @@ export function BodyScanner() {
                     Areas to Improve
                   </p>
                   <div className="flex flex-col gap-2.5">
-                    {results.recommendations.map((rec, i) => (
+                    {(results?.recommendations ?? []).map((rec, i) => (
                       <div
                         key={i}
                         className="flex items-start gap-2.5 text-sm"
@@ -461,22 +430,64 @@ export function BodyScanner() {
                 Scan Again
               </Button>
             </>
-          )}
+          ) : (
+            <>            
+              {image && !results && (
+                <Button
+                  onClick={handleAnalyze}
+                  disabled={scanning}
+                  size="lg"
+                  className="rounded-xl text-base font-semibold shadow-lg shadow-primary/25"
+                >
+                  {scanning ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Analyzing...
+                    </>
+                  ) : (
+                    <>
+                      <Activity className="mr-2 h-4 w-4" />
+                      Analyze Body
+                    </>
+                  )}
+                </Button>
+              )}
 
-          {!image && !results && (
-            <Card className="border-border/50">
-              <CardContent className="flex flex-col items-center gap-3 p-8 text-center">
-                <Activity className="h-8 w-8 text-muted-foreground/50" />
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">
-                    No body scan yet
-                  </p>
-                  <p className="mt-1 text-xs text-muted-foreground/70">
-                    Upload a full-body photo for AI-powered composition analysis.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
+              {scanning && (
+                <Card className="border-border/50">
+                  <CardContent className="flex flex-col items-center gap-3 p-8">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                    <p className="text-sm font-medium text-muted-foreground">
+                      AI is analyzing your body composition...
+                    </p>
+                  </CardContent>
+                </Card>
+              )}
+
+              {error && (
+                <Card className="border-red-500/50 bg-red-500/5">
+                  <CardContent className="p-4">
+                    <p className="text-sm text-red-600">Error: {error}</p>
+                  </CardContent>
+                </Card>
+              )}
+
+              {!image && !results && (
+                <Card className="border-border/50">
+                  <CardContent className="flex flex-col items-center gap-3 p-8 text-center">
+                    <Activity className="h-8 w-8 text-muted-foreground/50" />
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">
+                        No body scan yet
+                      </p>
+                      <p className="mt-1 text-xs text-muted-foreground/70">
+                        Upload a full-body photo for AI-powered composition analysis.
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+            </>
           )}
         </div>
       </div>
