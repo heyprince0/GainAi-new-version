@@ -170,7 +170,17 @@
 }
 
 @media (max-width: 1023px) {
+  /* Hide footer */
   footer { display: none !important; }
+
+  /* Move chat button above bottom nav */
+  .chat-button, [class*='chat'], [class*='Chat'] {
+    bottom: 75px !important;
+  }
+
+  /* Add padding so content not hidden behind nav */
+  main, .main-content { padding-bottom: 80px !important; }
+
   .bottom-nav { display: flex !important; }
 }
 

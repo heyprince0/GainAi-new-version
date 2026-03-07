@@ -11,8 +11,8 @@ export function BottomNav() {
     <nav style={{
       position: 'fixed',
       bottom: 0, left: 0, right: 0,
-      background: '#ffffff',
-      borderTop: '1px solid #e5e7eb',
+      background: '#0f1318',
+      borderTop: '1px solid #1a2028',
       display: 'flex',
       justifyContent: 'space-around',
       alignItems: 'center',
@@ -28,7 +28,7 @@ export function BottomNav() {
           display: 'flex', flexDirection: 'column',
           alignItems: 'center', gap: '2px',
           background: 'none', border: 'none', cursor: 'pointer',
-          color: isActive('/dashboard') ? '#00cc6a' : '#9ca3af',
+          color: isActive('/dashboard') ? '#00ff88' : '#5a6672',
           fontSize: '11px', fontWeight: 500, width: '33%'
         }}>
         <LayoutDashboard size={22} />
@@ -60,7 +60,7 @@ export function BottomNav() {
           display: 'flex', flexDirection: 'column',
           alignItems: 'center', gap: '2px',
           background: 'none', border: 'none', cursor: 'pointer',
-          color: isActive('/body-scanner') ? '#00cc6a' : '#9ca3af',
+          color: isActive('/body-scanner') ? '#00ff88' : '#5a6672',
           fontSize: '11px', fontWeight: 500, width: '33%'
         }}>
         <Activity size={22} />
