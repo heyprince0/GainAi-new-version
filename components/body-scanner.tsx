@@ -33,15 +33,36 @@ interface BodyResult {
 }
 
 export function BodyScanner() {
-  const { user } = useAuth()
-  const [image, setImage] = useState<string | null>(null)
-  const [scanning, setScanning] = useState(false)
-  const [results, setResults] = useState<BodyResult | null>(null)
-  const [error, setError] = useState<string | null>(null)
-  const [saved, setSaved] = useState(false)
-  const [saveMessage, setSaveMessage] = useState('')
-  const fileInputRef = useRef<HTMLInputElement>(null)
-  const cameraInputRef = useRef<HTMLInputElement>(null)
+  try {
+    const { user } = useAuth()
+    const [image, setImage] = useState<string | null>(null)
+    const [scanning, setScanning] = useState(false)
+    const [results, setResults] = useState<BodyResult | null>(null)
+    const [error, setError] = useState<string | null>(null)
+    const [saved, setSaved] = useState(false)
+    const [saveMessage, setSaveMessage] = useState('')
+    const fileInputRef = useRef<HTMLInputElement>(null)
+    const cameraInputRef = useRef<HTMLInputElement>(null)
+
+    // color helper defined early
+    const getBodyTypeColor = (type: string | undefined) => {
+      switch (type) {
+        case 'Athletic': return { bg: '#00ff88', text: '#000' }
+        case 'Mesomorph': return { bg: '#22c55e', text: '#000' }
+        case 'Ectomorph': return { bg: '#3b82f6', text: '#fff' }
+        case 'Skinny': return { bg: '#60a5fa', text: '#000' }
+        case 'Endomorph': return { bg: '#f97316', text: '#000' }
+        case 'Overweight': return { bg: '#fb923c', text: '#000' }
+        case 'Fat': return { bg: '#ef4444', text: '#fff' }
+        case 'Obese': return { bg: '#dc2626', text: '#fff' }
+        default: return { bg: '#6b7280', text: '#fff' }
+      }
+    }
+
+    // computed badge colors (safe)
+    const badgeColors = results?.body_type
+      ? getBodyTypeColor(results.body_type)
+      : { bg: '#6b7280', text: '#fff' }
 
   const handleUpload = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -300,36 +321,18 @@ export function BodyScanner() {
                     <p className="text-sm font-semibold text-foreground">
                       Body Analysis
                     </p>
-                    {(() => {
-                      const getBodyTypeColor = (type: string) => {
-                        switch (type) {
-                          case 'Athletic': return { bg: '#00ff88', text: '#000' }
-                          case 'Mesomorph': return { bg: '#22c55e', text: '#000' }
-                          case 'Ectomorph': return { bg: '#3b82f6', text: '#fff' }
-                          case 'Skinny': return { bg: '#60a5fa', text: '#000' }
-                          case 'Endomorph': return { bg: '#f97316', text: '#000' }
-                          case 'Overweight': return { bg: '#fb923c', text: '#000' }
-                          case 'Fat': return { bg: '#ef4444', text: '#fff' }
-                          case 'Obese': return { bg: '#dc2626', text: '#fff' }
-                          default: return { bg: '#6b7280', text: '#fff' }
-                        }
-                      }
-                      const colors = getBodyTypeColor(results.body_type)
-                      return (
-                        <div style={{
-                          display: 'inline-block',
-                          padding: '4px 14px',
-                          borderRadius: '20px',
-                          fontSize: '13px',
-                          fontWeight: '600',
-                          background: colors.bg,
-                          color: colors.text,
-                          marginTop: '8px'
-                        }}>
-                          {results.body_type || 'Unknown'}
-                        </div>
-                      )
-                    })()}
+                    <div style={{
+                    display: 'inline-block',
+                    padding: '4px 14px',
+                    borderRadius: '20px',
+                    fontSize: '13px',
+                    fontWeight: '600',
+                    background: badgeColors.bg,
+                    color: badgeColors.text,
+                    marginTop: '8px'
+                  }}>
+                    {results?.body_type || 'Unknown'}
+                  </div>
                   </div>
                   <div className="grid grid-cols-3 gap-4 text-center">
                     <div>
