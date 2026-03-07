@@ -81,7 +81,16 @@ export function BodyScanner() {
                     },
                   },
                   {
-                    text: `Analyze this body composition photo and provide fitness insights. Respond with a JSON object containing: bodyFatPercent (estimated number 8-35), category (Athletic/Average/Needs Work), bmi (estimated number 18-30), muscleMass (Above Average/Average/Below Average), recommendations (array of 4 actionable improvement tips), composition (array of 4 objects with label, value, color where labels are Muscle/Fat/Bone/Water and values sum to 100). Respond with ONLY a raw JSON object, no markdown, no code blocks, no explanation.`,
+                    text: `Analyze this body image and return ONLY this exact JSON with no markdown:
+{
+  "body_fat": <number>,
+  "bmi": <number>,
+  "body_type": "<one of these exact values only: Ectomorph, Mesomorph, Endomorph, Skinny, Athletic, Overweight, Obese, Fat>",
+  "body_type_description": "<one line description>",
+  "muscle": "<Low, Average, Above Average, High>",
+  "notes": "<brief personalized advice>"
+}
+`
                   },
                 ],
               },
@@ -291,17 +300,36 @@ export function BodyScanner() {
                     <p className="text-sm font-semibold text-foreground">
                       Body Analysis
                     </p>
-                    <Badge
-                      variant="secondary"
-                      className={cn(
-                        results.body_type === 'Ectomorph' && 'text-blue-400',
-                        ['Mesomorph','Athletic'].includes(results.body_type) && 'text-green-400',
-                        ['Endomorph','Overweight','Obese'].includes(results.body_type) && 'text-orange-400',
-                        results.body_type === 'Skinny' && 'text-yellow-400'
-                      )}
-                    >
-                      {results.body_type}
-                    </Badge>
+                    {(() => {
+                      const getBodyTypeColor = (type: string) => {
+                        switch (type) {
+                          case 'Athletic': return { bg: '#00ff88', text: '#000' }
+                          case 'Mesomorph': return { bg: '#22c55e', text: '#000' }
+                          case 'Ectomorph': return { bg: '#3b82f6', text: '#fff' }
+                          case 'Skinny': return { bg: '#60a5fa', text: '#000' }
+                          case 'Endomorph': return { bg: '#f97316', text: '#000' }
+                          case 'Overweight': return { bg: '#fb923c', text: '#000' }
+                          case 'Fat': return { bg: '#ef4444', text: '#fff' }
+                          case 'Obese': return { bg: '#dc2626', text: '#fff' }
+                          default: return { bg: '#6b7280', text: '#fff' }
+                        }
+                      }
+                      const colors = getBodyTypeColor(results.body_type)
+                      return (
+                        <div style={{
+                          display: 'inline-block',
+                          padding: '4px 14px',
+                          borderRadius: '20px',
+                          fontSize: '13px',
+                          fontWeight: '600',
+                          background: colors.bg,
+                          color: colors.text,
+                          marginTop: '8px'
+                        }}>
+                          {results.body_type || 'Unknown'}
+                        </div>
+                      )
+                    })()}
                   </div>
                   <div className="grid grid-cols-3 gap-4 text-center">
                     <div>
