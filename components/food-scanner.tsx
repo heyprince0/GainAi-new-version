@@ -22,11 +22,21 @@ interface FoodResult {
   servingSize: string
 }
 
+interface MealAnalysis {
+  meal_name: string
+  total_calories: number
+  total_protein: number
+  total_carbs: number
+  total_fats: number
+  total_fiber?: number
+  items: FoodResult[]
+}
+
 export function FoodScanner() {
   const { user } = useAuth()
   const [image, setImage] = useState<string | null>(null)
   const [scanning, setScanning] = useState(false)
-  const [results, setResults] = useState<FoodResult[] | null>(null)
+  const [analysis, setAnalysis] = useState<MealAnalysis | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [saved, setSaved] = useState(false)
   const [saveMessage, setSaveMessage] = useState('')
@@ -40,7 +50,7 @@ export function FoodScanner() {
         const reader = new FileReader()
         reader.onload = (ev) => {
           setImage(ev.target?.result as string)
-          setResults(null)
+          setAnalysis(null)
           setError(null)
         }
         reader.readAsDataURL(file)
@@ -71,7 +81,25 @@ export function FoodScanner() {
                     },
                   },
                   {
-                    text: `Analyze this food image and provide detailed nutritional information. For each food item detected, respond with a JSON array containing objects with these fields: name (string), calories (number), protein (number), carbs (number), fats (number), fiber (number), servingSize (string). Be specific and accurate. Respond with ONLY a raw JSON array, no markdown, no code blocks, no explanation.`,
+                    text: `Analyze this food image and return ONLY this exact JSON with no markdown:
+{
+  "meal_name": "<single descriptive name for the whole meal e.g. 'Indian Thali', 'Stir-fried Noodles'>",
+  "total_calories": <total calories of entire meal>,
+  "total_protein": <total protein grams>,
+  "total_carbs": <total carbs grams>,
+  "total_fats": <total fat grams>,
+  "total_fiber": <total fiber grams>,
+  "items": [
+    {
+      "food_name": "<item name>",
+      "serving_size": "<amount>",
+      "calories": <number>,
+      "protein": <number>,
+      "carbs": <number>,
+      "fats": <number>
+    }
+  ]
+}`,
                   },
                 ],
               },
@@ -93,16 +121,58 @@ export function FoodScanner() {
       const rawText = data.candidates[0].content.parts[0].text
       const cleanText = rawText.replace(/```json|```/g, "").trim()
       const parsed = JSON.parse(cleanText)
-      const foodResults = Array.isArray(parsed) ? parsed : [parsed]
-      setResults(foodResults)
 
+      // normalize into MealAnalysis
+      let meal: MealAnalysis
+      if (Array.isArray(parsed)) {
+        const items: FoodResult[] = parsed.map((p: any) => ({
+          name: p.name,
+          calories: p.calories,
+          protein: p.protein,
+          carbs: p.carbs,
+          fats: p.fats,
+          fiber: p.fiber || 0,
+          servingSize: p.servingSize || '',
+        }))
+        meal = {
+          meal_name: items.length === 1 ? items[0].name : 'Mixed Meal',
+          total_calories: items.reduce((acc, r) => acc + (r.calories || 0), 0),
+          total_protein: items.reduce((acc, r) => acc + (r.protein || 0), 0),
+          total_carbs: items.reduce((acc, r) => acc + (r.carbs || 0), 0),
+          total_fats: items.reduce((acc, r) => acc + (r.fats || 0), 0),
+          total_fiber: items.reduce((acc, r) => acc + (r.fiber || 0), 0),
+          items,
+        }
+      } else {
+        meal = {
+          meal_name: parsed.meal_name || 'Mixed Meal',
+          total_calories: parsed.total_calories || 0,
+          total_protein: parsed.total_protein || 0,
+          total_carbs: parsed.total_carbs || 0,
+          total_fats: parsed.total_fats || 0,
+          total_fiber: parsed.total_fiber || 0,
+          items: Array.isArray(parsed.items)
+            ? parsed.items.map((p: any) => ({
+                name: p.food_name || p.name,
+                calories: p.calories,
+                protein: p.protein,
+                carbs: p.carbs,
+                fats: p.fats,
+                fiber: 0,
+                servingSize: p.serving_size || '',
+              }))
+            : [],
+        }
+      }
+
+      setAnalysis(meal)
       // results are set, saving happens via button instead of automatically
       setSaved(false)
       setSaveMessage('')
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : "Failed to analyze food"
       setError(errorMsg)
-      setResults(null)
+      setAnalysis(null)
     } finally {
       setScanning(false)
     }
@@ -110,7 +180,7 @@ export function FoodScanner() {
 
   const handleReset = useCallback(() => {
     setImage(null)
-    setResults(null)
+    setAnalysis(null)
     setError(null)
     setSaved(false)
     setSaveMessage('')
@@ -118,37 +188,27 @@ export function FoodScanner() {
     if (cameraInputRef.current) cameraInputRef.current.value = ""
   }, [])
 
-  const totalCalories = results
-    ? results.reduce((acc, r) => acc + r.calories, 0)
-    : 0
-  const totalProtein = results
-    ? results.reduce((acc, r) => acc + r.protein, 0)
-    : 0
-  const totalCarbs = results
-    ? results.reduce((acc, r) => acc + r.carbs, 0)
-    : 0
-  const totalFats = results
-    ? results.reduce((acc, r) => acc + r.fats, 0)
-    : 0
+  const totalCalories = analysis?.total_calories ?? 0
+  const totalProtein = analysis?.total_protein ?? 0
+  const totalCarbs = analysis?.total_carbs ?? 0
+  const totalFats = analysis?.total_fats ?? 0
 
   const router = useRouter()
 
   const handleSave = async () => {
-    if (!user || !results || results.length === 0) return
+    if (!user || !analysis) return
     setSaved(true)
     try {
-      // log full result for debugging
-      console.log("Food scan results:", results)
-      const res = results[0]
+      console.log("Meal analysis:", analysis)
       const now = new Date().toISOString()
       const insertObj: any = {
         user_id: user.id,
-        food_name: res?.name || 'Unknown Food',
-        calories: Number(res?.calories) || 0,
-        protein: Number(res?.protein) || 0,
-        carbs: Number(res?.carbs) || 0,
-        fats: Number(res?.fats) || 0,
-        fiber: Number(res?.fiber) || 0,
+        food_name: analysis.meal_name || 'Mixed Meal',
+        calories: Number(analysis.total_calories) || 0,
+        protein: Number(analysis.total_protein) || 0,
+        carbs: Number(analysis.total_carbs) || 0,
+        fats: Number(analysis.total_fats) || 0,
+        fiber: Number(analysis.total_fiber) || 0,
         scanned_at: now,
       }
 
@@ -250,7 +310,7 @@ export function FoodScanner() {
 
         {/* Results / Action */}
         <div className="flex flex-col gap-4">
-          {image && !results && (
+          {image && !analysis && (
             <Button
               onClick={handleScan}
               disabled={scanning}
@@ -290,11 +350,16 @@ export function FoodScanner() {
             </Card>
           )}
 
-          {results && (
+          {analysis && (
             <>
               {/* Summary */}
               <Card className="border-primary/20 bg-primary/5">
                 <CardContent className="p-5">
+                  {analysis?.meal_name && (
+                    <p className="mb-1 text-lg font-semibold text-foreground">
+                      {analysis.meal_name}
+                    </p>
+                  )}
                   <p className="mb-3 text-sm font-semibold text-foreground">
                     Total Nutrition
                   </p>
@@ -328,7 +393,7 @@ export function FoodScanner() {
               </Card>
 
               {/* Individual Items */}
-              {results.map((food) => (
+              {analysis?.items.map((food) => (
                 <FoodResultCard key={food.name} food={food} />
               ))}
 
@@ -363,7 +428,7 @@ export function FoodScanner() {
             </>
           )}
 
-          {!image && !results && (
+          {!image && !analysis && (
             <Card className="border-border/50">
               <CardContent className="flex flex-col items-center gap-3 p-8 text-center">
                 <ScanLine className="h-8 w-8 text-muted-foreground/50" />

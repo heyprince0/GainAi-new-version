@@ -109,22 +109,10 @@ export function Dashboard() {
         const todays = todayData || []
         setTodayScans(todays)
 
-        const todayCalories = todays.reduce(
-          (sum, scan) => sum + (scan.calories ?? scan.total_calories ?? 0),
-          0
-        )
-        const todayProtein = todays.reduce(
-          (sum, scan) => sum + (scan.protein ?? scan.total_protein ?? 0),
-          0
-        )
-        const todayCarbs = todays.reduce(
-          (sum, scan) => sum + (scan.carbs ?? scan.total_carbs ?? 0),
-          0
-        )
-        const todayFats = todays.reduce(
-          (sum, scan) => sum + (scan.fats ?? scan.total_fats ?? 0),
-          0
-        )
+        const todayCalories = todays.reduce((sum, s) => sum + (s.calories ?? 0), 0) ?? 0
+        const todayProtein = todays.reduce((sum, s) => sum + (s.protein ?? 0), 0) ?? 0
+        const todayCarbs = todays.reduce((sum, s) => sum + (s.carbs ?? 0), 0) ?? 0
+        const todayFats = todays.reduce((sum, s) => sum + (s.fats ?? 0), 0) ?? 0
         setTodayStats({ calories: todayCalories, protein: todayProtein, carbs: todayCarbs, fats: todayFats })
 
         // fetch week scans
@@ -280,7 +268,7 @@ export function Dashboard() {
                         {scan?.scanned_at ? new Date(scan.scanned_at).toLocaleDateString() : 'N/A'}
                       </span>
                       <span className='text-sm font-semibold'>
-                        {(scan?.total_calories ?? scan?.calories ?? 0)} kcal
+                        {(scan?.calories ?? 0)} kcal
                       </span>
                     </div>
                   ))}
@@ -326,14 +314,14 @@ export function Dashboard() {
                     </div>
                     <div className='flex-1'>
                       <p className='text-sm font-medium text-foreground'>
-                        {scan.foods?.[0]?.name || scan.food_name || 'Food Scan'}
+                        {scan.food_name || 'Food Scan'}
                       </p>
                       <p className='text-xs text-muted-foreground'>
                         {scan?.scanned_at ? new Date(scan.scanned_at).toLocaleString() : 'N/A'}
                       </p>
                     </div>
                     <span className='text-sm font-semibold text-foreground'>
-                      {(scan?.total_calories ?? scan?.calories ?? 0)} kcal
+                      {(scan?.calories ?? 0)} kcal
                     </span>
                   </div>
                 ))
