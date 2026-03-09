@@ -416,10 +416,10 @@ Health score rules for gym/fitness people:
               {/* Health Score Section */}
               {analysis && (() => {
                 const score = analysis.health_score ?? 0
-                const scoreColor = score >= 80 ? '#00ff88' :
-                                   score >= 60 ? '#86efac' :
-                                   score >= 40 ? '#facc15' :
-                                   score >= 20 ? '#fb923c' : '#ef4444'
+                const scoreColor = score >= 8 ? '#00ff88' :
+                                   score >= 6 ? '#86efac' :
+                                   score >= 4 ? '#facc15' :
+                                   score >= 2 ? '#fb923c' : '#ef4444'
                 return (
                   <div style={{
                     marginTop: '12px'
@@ -427,11 +427,11 @@ Health score rules for gym/fitness people:
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
                       <span style={{ fontWeight: '600' }}>Health Score</span>
                       <span style={{ color: scoreColor }}>
-                        {score}/100 — {analysis.health_rating}
+                        {score}/10 — {analysis.health_rating}
                       </span>
                     </div>
                     <div style={{ width: '100%', height: '12px', background: '#e5e7eb', borderRadius: '10px' }}>
-                      <div style={{ width: `${score}%`, height: '100%', borderRadius: '10px', background: scoreColor, transition: 'width 1s ease' }} />
+                      <div style={{ width: `${score * 10}%`, height: '100%', borderRadius: '10px', background: scoreColor, transition: 'width 1s ease' }} />
                     </div>
                   </div>
                 )

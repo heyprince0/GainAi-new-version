@@ -85,10 +85,10 @@ export function Dashboard() {
     'User'
 
   const getScoreColor = (score: number) => {
-    if (score >= 80) return '#00ff88'
-    if (score >= 60) return '#86efac'
-    if (score >= 40) return '#facc15'
-    if (score >= 20) return '#fb923c'
+    if (score >= 8) return '#00ff88'
+    if (score >= 6) return '#86efac'
+    if (score >= 4) return '#facc15'
+    if (score >= 2) return '#fb923c'
     return '#ef4444'
   }
   const [todayStats, setTodayStats] = useState({ calories: 0, protein: 0, carbs: 0, fats: 0 })
@@ -335,7 +335,7 @@ export function Dashboard() {
             <CardContent className='p-2'>
               {todayScans.length > 0 ? (
                 todayScans.map((scan) => {
-                  const color = getScoreColor(scan.health_score ?? 50)
+                  const color = getScoreColor(scan.health_score ?? 5)
                   return (
                     <div
                       key={scan.id ?? scan.scanned_at}
@@ -365,7 +365,7 @@ export function Dashboard() {
                             color: getScoreColor(scan.health_score),
                             marginTop: '2px'
                           }}>
-                            {scan.health_score}/100 · {scan.health_rating ?? 'Average'}
+                            {scan.health_score}/10 · {scan.health_rating ?? 'Average'}
                           </div>
                         )}
                       </div>
