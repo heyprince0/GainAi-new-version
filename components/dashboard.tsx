@@ -42,6 +42,8 @@ interface FoodScan {
   foods?: any[]
   food_name?: string
   fiber?: number
+  health_score?: number
+  health_rating?: string
 }
 
 interface BodyScan {
@@ -86,6 +88,14 @@ export function Dashboard() {
     user?.user_metadata?.name ||
     user?.email?.split('@')[0] ||
     'User'
+
+  const getScoreColor = (score: number) => {
+    if (score >= 80) return '#00ff88'
+    if (score >= 60) return '#86efac'
+    if (score >= 40) return '#facc15'
+    if (score >= 20) return '#fb923c'
+    return '#ef4444'
+  }
   const [todayStats, setTodayStats] = useState({ calories: 0, protein: 0, carbs: 0, fats: 0 })
   const [loading, setLoading] = useState(true)
 
@@ -329,27 +339,44 @@ export function Dashboard() {
           <Card className='border-border/50'>
             <CardContent className='p-2'>
               {todayScans.length > 0 ? (
-                todayScans.map((scan) => (
-                  <div
-                    key={scan.id}
-                    className='flex items-center gap-3 rounded-xl px-3 py-3 transition-colors hover:bg-muted/50'
-                  >
-                    <div className='flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary'>
-                      <ScanLine className='h-4 w-4' />
+                todayScans.map((scan) => {
+                  const color = getScoreColor(scan.health_score ?? 50)
+                  return (
+                    <div
+                      key={scan.id}
+                      style={{
+                        padding: '12px 16px',
+                        borderRadius: '10px',
+                        borderLeft: `4px solid ${color}`,
+                        background: `${color}12`,
+                        marginBottom: '8px',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center'
+                      }}
+                    >
+                      <div>
+                        <div style={{ fontWeight: '600' }}>{scan.food_name || 'Food Scan'}</div>
+                        <div style={{ fontSize: '12px', opacity: 0.6 }}>
+                          {scan?.scanned_at ? formatIST(scan.scanned_at, true) : 'N/A'}
+                        </div>
+                      </div>
+                      <div style={{ textAlign: 'right' }}>
+                        <div style={{ fontWeight: '700' }}>{scan.calories} kcal</div>
+                        {scan.health_score && (
+                          <div style={{
+                            fontSize: '11px',
+                            fontWeight: '600',
+                            color: getScoreColor(scan.health_score),
+                            marginTop: '2px'
+                          }}>
+                            {scan.health_score}/100 · {scan.health_rating}
+                          </div>
+                        )}
+                      </div>
                     </div>
-                    <div className='flex-1'>
-                      <p className='text-sm font-medium text-foreground'>
-                        {scan.food_name || 'Food Scan'}
-                      </p>
-                      <p className='text-xs text-muted-foreground'>
-                        {scan?.scanned_at ? formatIST(scan.scanned_at) : 'N/A'}
-                      </p>
-                    </div>
-                    <span className='text-sm font-semibold text-foreground'>
-                      {(scan?.calories ?? 0)} kcal
-                    </span>
-                  </div>
-                ))
+                  )
+                })
               ) : (
                 <div className='p-4 text-center'>
                   <p className='text-sm text-muted-foreground'>No meals scanned today</p>

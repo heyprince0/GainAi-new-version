@@ -229,20 +229,8 @@ Health score rules for gym/fitness people:
         carbs: Number(analysis.total_carbs) || 0,
         fats: Number(analysis.total_fats) || 0,
         fiber: Number(analysis.total_fiber) || 0,
-        scanned_at: now,
-      }
-
-      const { error } = await supabase.from('food_scans').insert(insertObj)
-      if (error) throw error
-      setSaveMessage('✅ Saved to Dashboard!')
-      router.refresh()
-    } catch (err) {
-      setSaveMessage('Failed to save')
-      setSaved(false)
-      console.error(err)
-    }
-  }
-
+        health_score: analysis.health_score ?? null,
+        health_rating: analysis.health_rating || null,
   return (
     <div className="mx-auto max-w-4xl px-4 py-10 lg:px-6">
       <div className="mb-8">
@@ -413,27 +401,28 @@ Health score rules for gym/fitness people:
               </Card>
 
               {/* Health Score Section */}
-              <Card className="border-primary/20 bg-primary/5 mt-4">
-                <CardContent className="p-5">
-                  <div className="flex justify-between mb-2">
-                    <span className="font-medium">Health Score</span>
-                    <span className={`font-bold ${
-                      (analysis?.health_score ?? 0) >= 80 ? 'text-green-400' :
-                      (analysis?.health_score ?? 0) >= 60 ? 'text-lime-400' :
-                      (analysis?.health_score ?? 0) >= 40 ? 'text-yellow-400' :
-                      (analysis?.health_score ?? 0) >= 20 ? 'text-orange-400' : 'text-red-400'
-                    }`}>
-                      {analysis?.health_score ?? 0}/100 — {analysis?.health_rating}
-                    </span>
+              {analysis && (() => {
+                const score = analysis.health_score ?? 0
+                const scoreColor = score >= 80 ? '#00ff88' :
+                                   score >= 60 ? '#86efac' :
+                                   score >= 40 ? '#facc15' :
+                                   score >= 20 ? '#fb923c' : '#ef4444'
+                return (
+                  <div style={{
+                    marginTop: '12px'
+                  }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                      <span style={{ fontWeight: '600' }}>Health Score</span>
+                      <span style={{ color: scoreColor }}>
+                        {score}/100 — {analysis.health_rating}
+                      </span>
+                    </div>
+                    <div style={{ width: '100%', height: '12px', background: '#e5e7eb', borderRadius: '10px' }}>
+                      <div style={{ width: `${score}%`, height: '100%', borderRadius: '10px', background: scoreColor, transition: 'width 1s ease' }} />
+                    </div>
                   </div>
-
-                  <Progress value={analysis?.health_score ?? 0} className="h-2" />
-
-                  <div className="mt-3 p-3 bg-muted/10 border-l-4 border-primary rounded-md text-sm text-muted-foreground">
-                    🤖 {analysis?.ai_note}
-                  </div>
-                </CardContent>
-              </Card>
+                )
+              })()}
 
               {/* Individual Items */}
               {analysis?.items.map((food) => (
