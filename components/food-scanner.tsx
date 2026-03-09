@@ -413,56 +413,27 @@ Health score rules for gym/fitness people:
               </Card>
 
               {/* Health Score Section */}
-              <div style={{
-                background: '#1a1a2e',
-                borderRadius: '12px',
-                padding: '16px 20px',
-                marginTop: '12px'
-              }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                  <span style={{ fontWeight: '600' }}>Health Score</span>
-                  <span style={{
-                    fontWeight: '700',
-                    color: (analysis?.health_score ?? 0) >= 80 ? '#00ff88' :
-                           (analysis?.health_score ?? 0) >= 60 ? '#86efac' :
-                           (analysis?.health_score ?? 0) >= 40 ? '#facc15' :
-                           (analysis?.health_score ?? 0) >= 20 ? '#fb923c' : '#ef4444'
-                  }}>
-                    {analysis?.health_score ?? 0}/100 — {analysis?.health_rating}
-                  </span>
-                </div>
+              <Card className="border-primary/20 bg-primary/5 mt-4">
+                <CardContent className="p-5">
+                  <div className="flex justify-between mb-2">
+                    <span className="font-medium">Health Score</span>
+                    <span className={`font-bold ${
+                      (analysis?.health_score ?? 0) >= 80 ? 'text-green-400' :
+                      (analysis?.health_score ?? 0) >= 60 ? 'text-lime-400' :
+                      (analysis?.health_score ?? 0) >= 40 ? 'text-yellow-400' :
+                      (analysis?.health_score ?? 0) >= 20 ? 'text-orange-400' : 'text-red-400'
+                    }`}>
+                      {analysis?.health_score ?? 0}/100 — {analysis?.health_rating}
+                    </span>
+                  </div>
 
-                {/* Progress Bar */}
-                <div style={{
-                  width: '100%', height: '12px',
-                  background: '#2a2a3e', borderRadius: '10px', overflow: 'hidden'
-                }}>
-                  <div style={{
-                    width: `${analysis?.health_score ?? 0}%`,
-                    height: '100%',
-                    borderRadius: '10px',
-                    background: (analysis?.health_score ?? 0) >= 80 ? '#00ff88' :
-                               (analysis?.health_score ?? 0) >= 60 ? '#86efac' :
-                               (analysis?.health_score ?? 0) >= 40 ? '#facc15' :
-                               (analysis?.health_score ?? 0) >= 20 ? '#fb923c' : '#ef4444',
-                    transition: 'width 1s ease'
-                  }} />
-                </div>
+                  <Progress value={analysis?.health_score ?? 0} className="h-2" />
 
-                {/* AI Note */}
-                <div style={{
-                  marginTop: '12px',
-                  padding: '10px 14px',
-                  background: 'rgba(0,255,136,0.06)',
-                  borderLeft: '3px solid #00ff88',
-                  borderRadius: '6px',
-                  fontSize: '13px',
-                  lineHeight: '1.6',
-                  color: '#9ca3af'
-                }}>
-                  🤖 {analysis?.ai_note}
-                </div>
-              </div>
+                  <div className="mt-3 p-3 bg-muted/10 border-l-4 border-primary rounded-md text-sm text-muted-foreground">
+                    🤖 {analysis?.ai_note}
+                  </div>
+                </CardContent>
+              </Card>
 
               {/* Individual Items */}
               {analysis?.items.map((food) => (
