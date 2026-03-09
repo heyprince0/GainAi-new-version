@@ -126,7 +126,7 @@ export function BodyScanner() {
   "notes": "<brief personalized advice>"
 }
 
-Note: if the user appears skinny, do NOT label them as Ectomorph—use "Skinny" instead.
+Note: if the user appears skinny, do NOT label them as Ectomorph—use "Skinny" instead.  However, a slim frame with visible muscle definition (abs, arms, etc.) should **not** be called "Skinny"; in those cases prefer the appropriate athletic or ectomorph/mesomorph label.
 `
                   },
 
