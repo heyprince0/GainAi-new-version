@@ -1,32 +1,43 @@
-import type { Metadata } from "next"
-import { BodyScannerPage } from "@/components/body-scanner-page"
+'use client'
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://gain-ai.vercel.app"
+import { useAuth } from "@/lib/auth-context"
+import { Navbar } from "@/components/navbar"
+import { BodyScanner } from "@/components/body-scanner"
 
-export const metadata: Metadata = {
-  title: "Body Scanner — AI Body Composition Analysis",
-  description:
-    "Upload a full-body photo and get an instant AI-powered body composition analysis: body fat %, BMI, muscle mass, and personalized improvement areas.",
-  keywords: [
-    "body fat analyzer",
-    "AI body composition",
-    "body scanner app",
-    "BMI calculator",
-    "muscle mass analyzer",
-    "body type analysis",
-    "AI fitness analysis",
-  ],
-  alternates: {
-    canonical: `${siteUrl}/body-scanner`,
-  },
-  openGraph: {
-    url: `${siteUrl}/body-scanner`,
-    title: "Body Scanner — AI Body Composition Analysis | GainAi",
-    description:
-      "Get an instant AI-powered body composition analysis from a photo. Know your body fat, BMI, and what to work on.",
-  },
-}
+export default function BodyScannerPage() {
+  const { user, loading } = useAuth()
 
-export default function Page() {
-  return <BodyScannerPage />
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="text-center">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto mb-3" />
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!user) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center p-4">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-2">Sign in required</h1>
+          <p className="text-muted-foreground mb-6">Please sign in to access the Body Scanner</p>
+          <a href="/" className="text-primary hover:underline font-medium">
+            Go back to home
+          </a>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="flex min-h-screen flex-col pb-20">
+      <Navbar />
+      <main className="flex-1">
+        <BodyScanner />
+      </main>
+    </div>
+  )
 }

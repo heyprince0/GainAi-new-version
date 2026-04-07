@@ -1,31 +1,43 @@
-import type { Metadata } from "next"
-import { FoodScannerPage } from "@/components/food-scanner-page"
+'use client'
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://gain-ai.vercel.app"
+import { useAuth } from "@/lib/auth-context"
+import { Navbar } from "@/components/navbar"
+import { FoodScanner } from "@/components/food-scanner"
 
-export const metadata: Metadata = {
-  title: "Food Scanner — AI Macro Analyzer",
-  description:
-    "Upload or take a photo of any meal and instantly get calories, protein, carbs, fats, and fiber with AI precision. Free food macro analyzer powered by Gemini AI.",
-  keywords: [
-    "food scanner",
-    "AI macro tracker",
-    "calorie scanner",
-    "food photo analyzer",
-    "instant nutrition facts",
-    "meal macro breakdown",
-  ],
-  alternates: {
-    canonical: `${siteUrl}/food-scanner`,
-  },
-  openGraph: {
-    url: `${siteUrl}/food-scanner`,
-    title: "Food Scanner — AI Macro Analyzer | GainAi",
-    description:
-      "Upload a photo of any meal and get instant calories, protein, carbs and fats with AI. Free and accurate.",
-  },
-}
+export default function FoodScannerPage() {
+  const { user, loading } = useAuth()
 
-export default function Page() {
-  return <FoodScannerPage />
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="text-center">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto mb-3" />
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!user) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center p-4">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-2">Sign in required</h1>
+          <p className="text-muted-foreground mb-6">Please sign in to access the Food Scanner</p>
+          <a href="/" className="text-primary hover:underline font-medium">
+            Go back to home
+          </a>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="flex min-h-screen flex-col pb-20">
+      <Navbar />
+      <main className="flex-1">
+        <FoodScanner />
+      </main>
+    </div>
+  )
 }
