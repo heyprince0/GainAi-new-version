@@ -5,8 +5,6 @@ import { MessageCircle, X, Send, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
-const API_KEY = process.env.NEXT_PUBLIC_GEMINI_API_KEY
-
 interface Message {
   id: string
   role: "user" | "assistant"
@@ -47,7 +45,7 @@ export function AiChat() {
 
     try {
       const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite-preview:generateContent?key=${API_KEY}`,
+        "/api/gemini",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
