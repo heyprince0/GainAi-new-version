@@ -9,13 +9,13 @@ import { AiChat } from './ai-chat'
 import { BottomNav } from './bottom-nav'
 
 export function AuthLayout({ children }: { children: React.ReactNode }) {
-  const { user, loading, hasProfile } = useAuth()
+  const { user, loading, profileLoading, hasProfile } = useAuth()
   const router = useRouter()
   const pathname = usePathname()
   const [showAuthScreen, setShowAuthScreen] = useState(false)
 
   useEffect(() => {
-    if (loading) return
+    if (loading || (user && profileLoading)) return
 
     const isProtectedRoute = pathname.includes('food-scanner') || pathname.includes('body-scanner') || pathname.includes('dashboard')
     const isHomePage = pathname === '/'
@@ -45,9 +45,9 @@ export function AuthLayout({ children }: { children: React.ReactNode }) {
     }
 
     setShowAuthScreen(false)
-  }, [user, loading, hasProfile, pathname, router])
+  }, [user, loading, profileLoading, hasProfile, pathname, router])
 
-  if (loading) {
+  if (loading || (user && profileLoading)) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">

@@ -7,6 +7,7 @@ import type { User } from '@supabase/supabase-js'
 interface AuthContextType {
   user: User | null
   loading: boolean
+  profileLoading: boolean
   hasProfile: boolean
   intendedRoute: string | null
   signUp: (email: string, password: string) => Promise<void>
@@ -23,6 +24,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const [hasProfile, setHasProfile] = useState(false)
+  const [profileLoading, setProfileLoading] = useState(true)
   const [intendedRoute, setIntendedRoute] = useState<string | null>(null)
 
   useEffect(() => {
@@ -77,28 +79,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   const refreshProfile = async () => {
-    if (!user) return
+    if (!user) {
+      setHasProfile(false)
+      setProfileLoading(false)
+      return
+    }
+    setProfileLoading(true)
     try {
       const { data, error } = await supabase
         .from('profiles')
         .select()
         .eq('id', user.id)
         .single()
-      
+
       if (error && error.code !== 'PGRST116') throw error
       setHasProfile(!!data)
     } catch (error) {
       console.error('Error checking profile:', error)
       setHasProfile(false)
+    } finally {
+      setProfileLoading(false)
     }
   }
 
   useEffect(() => {
+    if (loading) return
     refreshProfile()
-  }, [user])
+  }, [user, loading])
 
   return (
-    <AuthContext.Provider value={{ user, loading, hasProfile, intendedRoute, signUp, signIn, signInWithGoogle, signOut, refreshProfile, setIntendedRoute }}>
+    <AuthContext.Provider value={{ user, loading, profileLoading, hasProfile, intendedRoute, signUp, signIn, signInWithGoogle, signOut, refreshProfile, setIntendedRoute }}>
       {children}
     </AuthContext.Provider>
   )
