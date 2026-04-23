@@ -297,25 +297,25 @@ export function Dashboard() {
       </div>
 
       {/* Streak Banner */}
-      <Card className='mb-6 overflow-hidden border-primary/30 bg-gradient-to-br from-primary/15 via-primary/5 to-transparent'>
-        <CardContent className='flex items-center justify-between gap-4 p-5'>
-          <div className='flex items-center gap-4'>
-            <div className='flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/20 text-primary'>
-              <Flame className='h-7 w-7' />
+      <Card className='mb-4 overflow-hidden border-primary/30 bg-gradient-to-br from-primary/15 via-primary/5 to-transparent'>
+        <CardContent className='flex items-center justify-between gap-3 px-4 py-2.5'>
+          <div className='flex items-center gap-3'>
+            <div className='flex h-9 w-9 items-center justify-center rounded-xl bg-primary/20 text-primary'>
+              <Flame className='h-4 w-4' />
             </div>
-            <div>
+            <div className='leading-tight'>
               <p className='text-[10px] font-medium uppercase tracking-wider text-muted-foreground'>
                 Scan Streak
               </p>
-              <p className='text-3xl font-bold text-foreground'>
-                {streak} <span className='text-base font-medium text-muted-foreground'>{streak === 1 ? 'day' : 'days'}</span>
+              <p className='text-base font-bold text-foreground'>
+                {streak} <span className='text-xs font-medium text-muted-foreground'>{streak === 1 ? 'day' : 'days'}</span>
+                <span className='ml-2 text-[11px] font-normal text-muted-foreground'>· {streakSubtitle}</span>
               </p>
-              <p className='mt-0.5 text-xs text-muted-foreground'>{streakSubtitle}</p>
             </div>
           </div>
           {streak > 0 && (
             <Badge
-              className='rounded-full border-0 bg-primary/20 px-3 py-1 text-primary'
+              className='rounded-full border-0 bg-primary/20 px-2 py-0.5 text-[10px] text-primary'
               variant='secondary'
             >
               {scannedToday ? 'Active today' : 'At risk'}
