@@ -47,7 +47,10 @@ export function AuthLayout({ children }: { children: React.ReactNode }) {
     setShowAuthScreen(false)
   }, [user, loading, profileLoading, hasProfile, pathname, router])
 
-  if (loading || (user && profileLoading)) {
+  const isHomePage = pathname === '/'
+  const redirectingHome = !!user && hasProfile && isHomePage
+
+  if (loading || (user && profileLoading) || redirectingHome) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
