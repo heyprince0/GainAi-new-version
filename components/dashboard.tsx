@@ -33,6 +33,7 @@ interface FoodScan {
   id?: string
   food_name: string
   calories: number
+  total_calories?: number
   protein: number
   carbs: number
   fats: number
@@ -47,6 +48,7 @@ interface BodyScan {
   scanned_at: string
   body_fat_percent?: number
   body_fat?: number
+  body_type?: string
 }
 
 const formatIST = (dateString: string, timeOnly = false) => {
@@ -233,7 +235,7 @@ export function Dashboard() {
     : 0
   const initials = (profile.name || displayName)
     .split(' ')
-    .map((n) => n[0])
+    .map((n: string) => n[0])
     .join('') || ''
 
   const calculateStreak = (scans: FoodScan[]) => {
