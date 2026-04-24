@@ -36,7 +36,12 @@ interface MealAnalysis {
 
 export function FoodScanner() {
   const { user } = useAuth()
-  const [image, setImage] = useState<string | null>(null)
+  const [image, setImage] = useState<string | null>(() => {
+    if (typeof window !== 'undefined') {
+      return sessionStorage.getItem('foodScannerImage') || null
+    }
+    return null
+  })
   const [scanning, setScanning] = useState(false)
   const [analysis, setAnalysis] = useState<MealAnalysis | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -44,6 +49,17 @@ export function FoodScanner() {
   const [saveMessage, setSaveMessage] = useState('')
   const [preparing, setPreparing] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const setImageWithStorage = useCallback((dataUrl: string | null) => {
+    if (typeof window !== 'undefined') {
+      if (dataUrl) {
+        sessionStorage.setItem('foodScannerImage', dataUrl)
+      } else {
+        sessionStorage.removeItem('foodScannerImage')
+      }
+    }
+    setImageWithStorage(dataUrl)
+  }, [])
 
   const handleUpload = useCallback(
     async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -58,7 +74,7 @@ export function FoodScanner() {
       setPreparing(true)
       try {
         const dataUrl = await processImageFile(file)
-        setImage(dataUrl)
+        setImageWithStorage(dataUrl)
       } catch (err) {
         setError(err instanceof Error ? err.message : "Could not load the image")
       } finally {
@@ -206,7 +222,7 @@ Health score rules for gym/fitness people (1–10 whole numbers):
   }, [image])
 
   const handleReset = useCallback(() => {
-    setImage(null)
+    setImageWithStorage(null)
     setAnalysis(null)
     setError(null)
     setSaved(false)
@@ -306,7 +322,7 @@ Health score rules for gym/fitness people (1–10 whole numbers):
                         setAnalysis(null)
                         setPreparing(true)
                         processImageFile(file)
-                          .then((dataUrl) => setImage(dataUrl))
+                          .then((dataUrl) => setImageWithStorage(dataUrl))
                           .catch((err) => setError(err instanceof Error ? err.message : "Could not load the image"))
                           .finally(() => setPreparing(false))
                       }}
