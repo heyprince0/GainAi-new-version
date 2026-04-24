@@ -68,6 +68,7 @@ export function BodyScanner() {
   const [saved, setSaved] = useState(false)
   const [saveMessage, setSaveMessage] = useState('')
   const [preparing, setPreparing] = useState(false)
+  const [cameraInputKey, setCameraInputKey] = useState(0)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   // compute badgeColors even when results is null (fallback)
@@ -251,7 +252,7 @@ Note: if the user appears skinny, do NOT label them as Ectomorph—use "Skinny" 
                     <Camera className="h-3.5 w-3.5" />
                     Take Photo
                     <input
-                      key={Date.now()}
+                      key={cameraInputKey}
                       type="file"
                       accept="image/*"
                       capture="user"
@@ -262,6 +263,7 @@ Note: if the user appears skinny, do NOT label them as Ectomorph—use "Skinny" 
                         setError(null)
                         setResults(null)
                         setPreparing(true)
+                        setCameraInputKey(k => k + 1)
                         processImageFile(file)
                           .then((dataUrl) => setImage(dataUrl))
                           .catch((err) => setError(err instanceof Error ? err.message : "Could not load the image"))
@@ -496,3 +498,4 @@ Note: if the user appears skinny, do NOT label them as Ectomorph—use "Skinny" 
     </div>
   )
 }
+
