@@ -291,7 +291,7 @@ Health score rules for gym/fitness people (1–10 whole numbers):
                     <Upload className="mr-2 h-3.5 w-3.5" />
                     Upload Image
                   </Button>
-                  <label className="inline-flex items-center justify-center gap-2 rounded-lg border border-input bg-background px-3 h-8 text-sm font-medium hover:bg-accent hover:text-accent-foreground cursor-pointer transition-colors">
+                  <label className="inline-flex items-center justify-center gap-2 rounded-lg border border-input bg-background px-3 h-8 text-sm font-medium hover:bg-accent hover:text-accent-foreground cursor-pointer transition-colors whitespace-nowrap">
                     <Camera className="mr-2 h-3.5 w-3.5" />
                     Take Photo
                     <input
