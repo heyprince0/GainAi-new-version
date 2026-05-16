@@ -28,30 +28,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [intendedRoute, setIntendedRoute] = useState<string | null>(null)
 
   useEffect(() => {
-    // Check if user is already logged in
-    const checkSession = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession()
-        setUser(session?.user || null)
-      } catch (error) {
-        console.error('Error checking session:', error)
-      } finally {
+    let mounted = true
+
+    // Get initial session first before anything renders
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (mounted) {
+        setUser(session?.user ?? null)
         setLoading(false)
       }
-    }
+    })
 
-    checkSession()
-
-    // Listen for auth changes
+    // Listen for ALL auth state changes including TOKEN_REFRESHED and INITIAL_SESSION
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
-          setUser(session?.user || null)
+      (_event, session) => {
+        if (mounted) {
+          setUser(session?.user ?? null)
+          setLoading(false)
         }
       }
     )
 
-    return () => subscription?.unsubscribe()
+    return () => {
+      mounted = false
+      subscription?.unsubscribe()
+    }
   }, [])
 
   const signUp = async (email: string, password: string) => {

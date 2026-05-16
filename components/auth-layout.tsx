@@ -12,76 +12,38 @@ export function AuthLayout({ children }: { children: React.ReactNode }) {
   const { user, loading, profileLoading, hasProfile } = useAuth()
   const router = useRouter()
   const pathname = usePathname()
-  const [showAuthScreen, setShowAuthScreen] = useState(false)
+
+  const protectedRoutes = ['/dashboard', '/food-scanner', '/body-scanner']
+  const authRoutes = ['/login', '/signup', '/']
+  const isProtectedRoute = protectedRoutes.some(route => pathname?.startsWith(route))
+  const isAuthRoute = authRoutes.includes(pathname ?? '')
 
   useEffect(() => {
-    if (loading || (user && profileLoading)) return
+    // Wait for auth to finish loading before doing anything
+    if (loading) return
 
-    const isProtectedRoute = pathname.includes('food-scanner') || pathname.includes('body-scanner') || pathname.includes('dashboard')
-    const isHomePage = pathname === '/'
-
-    // Unauthenticated user trying to access protected route
     if (!user && isProtectedRoute) {
-      setShowAuthScreen(true)
+      router.replace('/')
       return
     }
 
-    // Authenticated user without profile setup
-    if (user && !hasProfile && !isProtectedRoute) {
-      setShowAuthScreen(false)
+    if (user && isAuthRoute) {
+      router.replace('/dashboard')
       return
     }
+  }, [user, loading, pathname])
 
-    // Authenticated user with profile on home page
-    if (user && hasProfile && isHomePage) {
-      router.push('/dashboard')
-      return
-    }
-
-    // Home page for unauthenticated users is allowed
-    if (!user && isHomePage) {
-      setShowAuthScreen(false)
-      return
-    }
-
-    setShowAuthScreen(false)
-  }, [user, loading, profileLoading, hasProfile, pathname, router])
-
-  const isHomePage = pathname === '/'
-  const redirectingHome = !!user && hasProfile && isHomePage
-
-  // Only show loading on initial load when we don't know auth state yet
-  // Never unmount children if user is already known — this causes camera photo loss
-  if (!user && loading) {
+  // Show nothing while auth is loading — this prevents the flash
+  if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
+      <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-3">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-          <p className="text-sm text-muted-foreground">Loading...</p>
+          <div className="h-8 w-8 rounded-full border-2 border-[#00ff88] border-t-transparent animate-spin" />
+          <p className="text-muted-foreground text-sm">Loading...</p>
         </div>
       </div>
     )
   }
 
-  // Show auth screen when user tries to access protected route without being logged in
-  if (showAuthScreen) {
-    return <AuthScreen />
-  }
-
-  // Show profile setup for authenticated users without profile
-  if (user && !hasProfile) {
-    return <ProfileSetup />
-  }
-
-  // Show main app content (home or protected pages)
-  const hideNav = pathname === '/' || showAuthScreen
-
-  return (
-    <>
-      {/* pad bottom on small screens so content isn't obscured */}
-      <div className='main-content'>{children}</div>
-      {user && hasProfile && !hideNav && <BottomNav />}
-      {user && hasProfile && <AiChat />}
-    </>
-  )
+  return <>{children}</>
 }
