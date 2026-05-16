@@ -279,8 +279,6 @@ export function Dashboard() {
       ? 'Keep it up!'
       : 'Scan today to keep it alive'
 
-  const [showPlanner, setShowPlanner] = useState(false)
-
   return (
     <div className='mx-auto max-w-4xl px-4 py-10 lg:px-6'>
       {/* Profile Header */}
@@ -531,14 +529,6 @@ export function Dashboard() {
 
         </TabsContent>
       </Tabs>
-
-      {showPlanner && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl bg-[#0a0a0a] border border-white/10">
-            <WorkoutPlannerForm userId={user?.id ?? ''} existingBodyFat={bodyScan?.body_fat_percent} onComplete={() => { setShowPlanner(false) }} />
-          </div>
-        </div>
-      )}
     </div>
   )
 }
