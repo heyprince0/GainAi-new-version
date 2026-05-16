@@ -13,7 +13,7 @@ export async function POST(request: Request) {
     )
   }
 
-  let payload: unknown
+  let payload: any
 
   try {
     payload = await request.json()
@@ -29,6 +29,12 @@ export async function POST(request: Request) {
       { error: { message: "Request body must be a JSON object" } },
       { status: 400 }
     )
+  }
+
+  if (payload.generationConfig) {
+    payload.generationConfig.maxOutputTokens = 4000
+  } else {
+    payload.generationConfig = { maxOutputTokens: 4000 }
   }
 
   const response = await fetch(`${GEMINI_ENDPOINT}?key=${encodeURIComponent(apiKey)}`, {
