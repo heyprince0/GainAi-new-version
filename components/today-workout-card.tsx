@@ -28,6 +28,8 @@ interface WorkoutDay {
   cool_down: string
 }
 
+const cleanName = (name: string) => name.replace(/\s[A-C]$/i, '').trim()
+
 interface WorkoutLog {
   id: string
   plan_id: string
@@ -58,11 +60,10 @@ export function TodayWorkoutCard({ userId, onCreatePlan }: Props) {
   useEffect(() => {
     const fetchTodayWorkout = async () => {
       try {
-        // Get today's day of week: 0=Sunday, 1=Monday, ... 6=Saturday
-        const todayDayNumber = new Date().getDay()
-        
-        // Map JS day number to plan day_number: 1=Monday, 2=Tuesday, ..., 7=Sunday
-        const planDayNumber = todayDayNumber === 0 ? 7 : todayDayNumber
+        const today = new Date()
+        const jsDayOfWeek = today.getDay()
+        // Convert JS day (0=Sun,1=Mon...6=Sat) to plan day_number (1=Mon,2=Tue...7=Sun)
+        const planDayNumber = jsDayOfWeek === 0 ? 7 : jsDayOfWeek
 
         // Fetch latest active workout plan
         const { data: planData, error: planError } = await supabase
@@ -87,7 +88,8 @@ export function TodayWorkoutCard({ userId, onCreatePlan }: Props) {
         setGoalSummary(plan.goal_summary || '')
 
         // Find today's workout in the plan
-        const todayDayWorkout = plan.days.find((day) => day.day_number === planDayNumber)
+        const todayDay = plan.days.find((d: any) => d.day_number === planDayNumber)
+        const todayDayWorkout = todayDay ? { ...todayDay, day_name: cleanName(todayDay.day_name), exercises: todayDay.exercises.map((ex: any) => ({ ...ex, name: cleanName(ex.name) })) } : undefined
 
         if (!todayDayWorkout) {
           // Rest day - day not in plan
@@ -202,19 +204,19 @@ export function TodayWorkoutCard({ userId, onCreatePlan }: Props) {
             <div className="flex items-start gap-3">
               <Activity className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
               <div className="flex-1">
-                <h3 className="font-semibold text-foreground">{todayWorkout.day_name}</h3>
+                <h3 className="font-semibold text-foreground">{cleanName(todayWorkout.day_name)}</h3>
                 <p className="text-xs text-muted-foreground mt-1">
                   {todayWorkout.exercises.length} exercises · {todayWorkout.duration_minutes} mins
                 </p>
               </div>
               <Badge className="bg-primary/20 text-primary border-0 text-xs">
-                {todayWorkout.focus}
+                {cleanName(todayWorkout.focus)}
               </Badge>
             </div>
 
             <Button
               onClick={() => setShowExerciseModal(true)}
-              className="w-full mt-4 bg-gradient-to-r from-primary to-[#00cc6a] text-black font-semibold rounded-xl"
+              className="w-full mt-4 bg-gradient-to-r from-[#00ff88] to-[#00cc6a] text-black font-semibold rounded-xl"
             >
               View Workout →
             </Button>
@@ -229,7 +231,7 @@ export function TodayWorkoutCard({ userId, onCreatePlan }: Props) {
                   <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                     {planName}
                   </h3>
-                  <h2 className="text-xl font-bold text-foreground">{todayWorkout.day_name}</h2>
+                  <h2 className="text-xl font-bold text-foreground">{cleanName(todayWorkout.day_name)}</h2>
                   <p className="text-sm text-muted-foreground mt-1">{goalSummary}</p>
                 </div>
                 <button
@@ -253,7 +255,7 @@ export function TodayWorkoutCard({ userId, onCreatePlan }: Props) {
                 {todayWorkout.exercises.map((exercise, idx) => (
                   <div key={idx} className="p-4 bg-card border border-border rounded-xl">
                     <div className="flex items-start justify-between mb-2">
-                      <h3 className="font-semibold text-foreground">{exercise.name}</h3>
+                      <h3 className="font-semibold text-foreground">{cleanName(exercise.name)}</h3>
                       <Badge className="bg-primary/20 text-primary border-0 text-xs">
                         {exercise.sets}x {exercise.reps}
                       </Badge>
@@ -295,7 +297,7 @@ export function TodayWorkoutCard({ userId, onCreatePlan }: Props) {
           <div className="flex items-start gap-3">
             <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
             <div className="flex-1">
-              <h3 className="font-semibold text-foreground">{todayWorkout.day_name}</h3>
+              <h3 className="font-semibold text-foreground">{cleanName(todayWorkout.day_name)}</h3>
               <p className="text-xs text-primary mt-1">Completed Today 🎉</p>
             </div>
           </div>

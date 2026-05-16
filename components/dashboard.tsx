@@ -314,25 +314,21 @@ export function Dashboard() {
       </div>
 
       {/* Streak Banner - Compact Single Row */}
-      <Card className={`mb-4 border rounded-2xl ${streak > 0 && scannedToday ? 'border-primary' : 'border-border'}`}>
-        <CardContent className='flex items-center justify-between gap-4 px-4 py-3'>
-          <div className='flex items-center gap-3'>
-            <Flame className={`h-5 w-5 ${todayScans.length > 0 ? 'text-red-500' : 'text-muted-foreground'}`} />
-            <div className='flex items-baseline gap-1'>
-              <span className='text-lg font-bold text-foreground'>{streak}</span>
-              <span className='text-xs text-muted-foreground'>day streak</span>
-            </div>
-          </div>
-          {streak > 0 && !scannedToday && (
-            <Badge
-              className='rounded-full border-0 bg-red-500/20 px-2 py-0.5 text-[10px] text-red-500'
-              variant='secondary'
-            >
-              At risk
-            </Badge>
-          )}
-        </CardContent>
-      </Card>
+      <div className='flex items-center gap-2 px-1 py-2 mb-4'>
+        <Flame className={`h-5 w-5 ${todayScans.length > 0 ? 'text-red-500' : 'text-muted-foreground'}`} />
+        <div className='flex items-baseline gap-1'>
+          <span className='text-lg font-bold text-foreground'>{streak}</span>
+          <span className='text-xs text-muted-foreground'>day streak</span>
+        </div>
+        {streak > 0 && !scannedToday && (
+          <Badge
+            className='rounded-full border-0 bg-red-500/20 px-2 py-0.5 text-[10px] text-red-500 ml-auto'
+            variant='secondary'
+          >
+            At risk
+          </Badge>
+        )}
+      </div>
 
       {!hasWorkoutPlan && (
         <button
@@ -560,6 +556,7 @@ export function Dashboard() {
               existingBodyFat={bodyScan?.body_fat_percent}
               onComplete={() => {
                 setShowPlanner(false)
+                window.location.reload()
               }}
             />
           </div>
@@ -644,6 +641,10 @@ const calculateGoals = (age: number, weight: number, height: number, goal: strin
   }
 }
 
+const cleanName = (name: string) => name.replace(/\s[A-C]$/i, '').trim()
+
+const dayAbbreviations = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+
 function EditProfileTab({
   profile,
   user,
@@ -660,6 +661,7 @@ function EditProfileTab({
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [weeklyPlan, setWeeklyPlan] = useState<any>(null)
   const [form, setForm] = useState({
     name: profile.name || '',
     age: profile.age?.toString() || '',
@@ -667,6 +669,33 @@ function EditProfileTab({
     height: profile.height?.toString() || '',
     goal: profile.goal || 'maintain',
   })
+
+  useEffect(() => {
+    const fetchWeeklyPlan = async () => {
+      try {
+        const { data, error: err } = await supabase
+          .from('workout_plans')
+          .select('plan')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .single()
+        
+        if (err && err.code !== 'PGRST116') {
+          console.error('Error fetching weekly plan:', err)
+        }
+        if (data) {
+          setWeeklyPlan(data.plan)
+        }
+      } catch (err) {
+        console.error('Error fetching weekly plan:', err)
+      }
+    }
+    
+    if (user?.id) {
+      fetchWeeklyPlan()
+    }
+  }, [user?.id])
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -813,6 +842,34 @@ function EditProfileTab({
             <Dumbbell className='h-4 w-4 text-primary' />
             <p className='text-sm font-semibold text-foreground'>Workout Plan</p>
           </div>
+          
+          {weeklyPlan && weeklyPlan.days && (
+            <div className='mb-4'>
+              <p className='text-sm font-semibold text-foreground mb-2'>This Week&apos;s Plan</p>
+              <div className='flex gap-2 overflow-x-auto pb-2'>
+                {dayAbbreviations.map((dayAbbr, idx) => {
+                  const dayNumber = idx + 1 // Mon=1, Tue=2, ..., Sun=7
+                  const workoutDay = weeklyPlan.days.find((d: any) => d.day_number === dayNumber)
+                  return (
+                    <div
+                      key={dayAbbr}
+                      className={`flex-shrink-0 px-2 py-2 rounded-xl text-xs text-center min-w-[44px] ${
+                        workoutDay
+                          ? 'bg-[#00ff88]/10 border border-[#00ff88]/30 text-[#00ff88]'
+                          : 'bg-muted text-muted-foreground'
+                      }`}
+                    >
+                      <div className='font-bold'>{dayAbbr}</div>
+                      <div className='text-[10px] mt-0.5'>
+                        {workoutDay ? cleanName(workoutDay.focus) : 'Rest'}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+          
           <p className='mb-4 text-xs text-muted-foreground'>
             {hasWorkoutPlan
               ? 'Create a new AI-generated workout plan based on your current profile and goals.'
