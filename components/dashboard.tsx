@@ -83,6 +83,7 @@ export function Dashboard() {
   const [weekLabel, setWeekLabel] = useState('')
   const [bodyScan, setBodyScan] = useState<BodyScan | null>(null)
   const [showPlanner, setShowPlanner] = useState(false)
+  const [hasWorkoutPlan, setHasWorkoutPlan] = useState(false)
   // compute displayName with fallbacks
   const displayName = profile?.name ||
     user?.user_metadata?.full_name ||
@@ -210,6 +211,17 @@ export function Dashboard() {
         
         if (bodyError) console.error('Body scan error:', bodyError)
         if (bodyData && bodyData.length > 0) setBodyScan(bodyData[0])
+
+        // Check if user has a workout plan
+        const { data: planData, error: planError } = await supabase
+          .from('workout_plans')
+          .select('id')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(1)
+        
+        if (planError) console.error('Workout plan error:', planError)
+        setHasWorkoutPlan(planData && planData.length > 0)
       } catch (error) {
         console.error('Error fetching dashboard data:', error)
       } finally {
@@ -328,6 +340,15 @@ export function Dashboard() {
           )}
         </CardContent>
       </Card>
+
+      {!hasWorkoutPlan && (
+        <button
+          onClick={() => setShowPlanner(true)}
+          className="w-full py-2 mb-6 bg-gradient-to-r from-primary to-[#00cc6a] text-black font-semibold rounded-xl text-sm"
+        >
+          Create Workout Plan ✨
+        </button>
+      )}
 
       <TodayWorkoutCard
         userId={user?.id ?? ''}
