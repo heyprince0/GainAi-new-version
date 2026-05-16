@@ -117,6 +117,16 @@ export function WorkoutPlannerForm({ userId, existingBodyFat, onComplete }: Prop
 
 User details: age ${age}, gender ${formData.gender}, weight ${weight}kg, height ${height}cm, body fat ${formData.bodyFatPercent}%, main goal: ${formData.fitnessGoal}, secondary goal: ${formData.secondaryGoal || 'none'}, experience: ${formData.experienceLevel}, training days per week: ${formData.daysPerWeek}, lifestyle: ${formData.lifestyle}, injuries or limitations: ${formData.injuryInfo || 'none'}.
 
+Important scheduling rules:
+- Spread workout days evenly across the week. Never put all rest days together at the end.
+- For 3 days per week use: Monday, Wednesday, Friday. Rest on Tuesday, Thursday, Saturday, Sunday.
+- For 4 days per week use: Monday, Tuesday, Thursday, Friday. Rest on Wednesday, Saturday, Sunday.
+- For 5 days per week use: Monday, Tuesday, Wednesday, Friday, Saturday. Rest on Thursday, Sunday.
+- For 6 days per week use: Monday, Tuesday, Wednesday, Thursday, Friday, Saturday. Rest on Sunday only.
+- Assign day_number strictly as: 1=Monday, 2=Tuesday, 3=Wednesday, 4=Thursday, 5=Friday, 6=Saturday, 7=Sunday.
+- Never assign two rest days between two workout days unnecessarily.
+- The number of days in the "days" array must exactly match the days_per_week number the user selected. No more, no less.
+
 Return exactly this JSON structure and nothing else:
 {
   "plan_name": "string",
