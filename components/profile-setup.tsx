@@ -142,7 +142,7 @@ export function ProfileSetup() {
                 onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
                 className='w-full rounded-lg border border-input bg-background px-3 py-2 text-sm'
               >
-                <option value=''>Select gender (optional)</option>
+                <option value=''>Select gender</option>
                 <option value='Male'>Male</option>
                 <option value='Female'>Female</option>
                 <option value='Other'>Other</option>
