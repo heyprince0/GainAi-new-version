@@ -1,39 +1,30 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { useAuth } from '@/lib/auth-context'
-import { AuthScreen } from './auth-screen'
-import { ProfileSetup } from './profile-setup'
-import { AiChat } from './ai-chat'
-import { BottomNav } from './bottom-nav'
 
 export function AuthLayout({ children }: { children: React.ReactNode }) {
-  const { user, loading, profileLoading, hasProfile } = useAuth()
+  const { user, loading } = useAuth()
   const router = useRouter()
   const pathname = usePathname()
 
   const protectedRoutes = ['/dashboard', '/food-scanner', '/body-scanner']
-  const authRoutes = ['/login', '/signup', '/']
-  const gymAdminRoutes = ['/gym-admin', '/join']
   const isProtectedRoute = protectedRoutes.some(route => pathname?.startsWith(route))
-  const isGymRoute = gymAdminRoutes.some(route => pathname?.startsWith(route))
-  useEffect(() => {
-    // Wait for auth to finish loading before doing anything
-    if (loading) return
+  const isHomePage = pathname === '/'
 
+  useEffect(() => {
+    if (loading) return
     if (!user && isProtectedRoute) {
       router.replace('/')
       return
     }
-
-if (user && isAuthRoute && !isGymRoute) {
-  router.replace('/dashboard')
-  return
-}
+    if (user && isHomePage) {
+      router.replace('/dashboard')
+      return
+    }
   }, [user, loading, pathname])
 
-  // Show nothing while auth is loading — this prevents the flash
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
