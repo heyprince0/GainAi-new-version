@@ -12,9 +12,9 @@ interface ProfileFormData {
   age: number
   weight: number
   goal: 'lose' | 'maintain' | 'gain'
+  gender: string
 }
 
-// simple math-based goal calculator using Mifflin-St Jeor (male assumption)
 const calculateGoals = (
   age: number,
   weight: number,
@@ -58,6 +58,7 @@ export function ProfileSetup() {
     age: 25,
     weight: 70,
     goal: 'maintain',
+    gender: '',
   })
 
   const [height, setHeight] = useState('')
@@ -70,7 +71,6 @@ export function ProfileSetup() {
     try {
       if (!user) throw new Error('User not authenticated')
 
-      // use provided height in centimetres
       const heightInCm = parseFloat(height)
 
       const goals = calculateGoals(
@@ -89,6 +89,7 @@ export function ProfileSetup() {
           weight: parseFloat(formData.weight.toString()),
           height: parseFloat(height),
           goal: formData.goal,
+          gender: formData.gender || null,
           calorie_goal: goals.calorie_goal,
           protein_goal: goals.protein_goal,
           carbs_goal: goals.carbs_goal,
@@ -97,7 +98,7 @@ export function ProfileSetup() {
         }, { onConflict: 'id' })
 
       if (err) throw err
-      
+
       await refreshProfile()
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'Failed to setup profile'
@@ -130,6 +131,22 @@ export function ProfileSetup() {
                 placeholder='Your name'
                 required
               />
+            </div>
+
+            <div>
+              <label className='block text-sm font-medium text-foreground mb-1'>
+                Gender
+              </label>
+              <select
+                value={formData.gender}
+                onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
+                className='w-full rounded-lg border border-input bg-background px-3 py-2 text-sm'
+              >
+                <option value=''>Select gender (optional)</option>
+                <option value='Male'>Male</option>
+                <option value='Female'>Female</option>
+                <option value='Other'>Other</option>
+              </select>
             </div>
 
             <div className='grid grid-cols-2 gap-3'>
@@ -193,7 +210,6 @@ export function ProfileSetup() {
                 <option value='gain'>Gain Muscle</option>
               </select>
             </div>
-
 
             {error && (
               <div className='rounded-lg border border-red-500/50 bg-red-500/5 p-3'>
