@@ -112,24 +112,23 @@ export default function GymAdminPage() {
       return
     }
 
-    const fetchGym = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('gyms')
-          .select('*')
-          .eq('owner_id', authUser.id)
-          .single()
+const fetchGym = async () => {
+  try {
+    const { data, error } = await supabase
+      .from('gyms')
+      .select('*')
+      .eq('owner_id', authUser.id)
+      .maybeSingle() // use maybeSingle instead of single — returns null if not found
 
-        if (error) throw error
-        setGym(data)
-      } catch (error) {
-        console.error('Error fetching gym:', error)
-        setGym(null)
-      } finally {
-        setLoading(false)
-      }
-    }
-
+    if (error) throw error
+    setGym(data) // data will be null if no gym exists — that's fine
+  } catch (error) {
+    console.error('Error fetching gym:', error)
+    setGym(null)
+  } finally {
+    setLoading(false)
+  }
+}
     fetchGym()
   }, [authUser])
 
