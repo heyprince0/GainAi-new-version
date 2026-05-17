@@ -39,7 +39,6 @@ interface WorkoutPlan {
 }
 
 interface FormData {
-  gender: 'male' | 'female' | 'other' | null
   bodyFatPercent: number | null
   fitnessGoal: string | null
   secondaryGoal: string | null
@@ -47,6 +46,7 @@ interface FormData {
   daysPerWeek: number | null
   injuryInfo: string
   lifestyle: string | null
+  athleteType: string | null
 }
 
 export function WorkoutPlannerForm({ userId, existingBodyFat, onComplete }: Props) {
@@ -54,7 +54,6 @@ export function WorkoutPlannerForm({ userId, existingBodyFat, onComplete }: Prop
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [formData, setFormData] = useState<FormData>({
-    gender: null,
     bodyFatPercent: existingBodyFat ?? null,
     fitnessGoal: null,
     secondaryGoal: null,
@@ -62,6 +61,7 @@ export function WorkoutPlannerForm({ userId, existingBodyFat, onComplete }: Prop
     daysPerWeek: null,
     injuryInfo: '',
     lifestyle: null,
+    athleteType: null,
   })
 
   const updateFormData = (updates: Partial<FormData>) => {
@@ -69,7 +69,7 @@ export function WorkoutPlannerForm({ userId, existingBodyFat, onComplete }: Prop
   }
 
   const handleNext = () => {
-    if (currentStep < 7) setCurrentStep(currentStep + 1)
+    if (currentStep < 8) setCurrentStep(currentStep + 1)
   }
 
   const handleBack = () => {
@@ -84,13 +84,13 @@ export function WorkoutPlannerForm({ userId, existingBodyFat, onComplete }: Prop
     // Fetch user profile
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('name, age, weight, height')
+      .select('name, age, weight, height, gender')
       .eq('id', userId)
       .single()
 
     if (profileError) throw new Error('Failed to fetch profile')
 
-    const { age, weight, height } = profile
+    const { age, weight, height, gender } = profile
 
     // Upsert workout_profiles
     const { error: upsertError } = await supabase
@@ -98,7 +98,6 @@ export function WorkoutPlannerForm({ userId, existingBodyFat, onComplete }: Prop
       .upsert(
         {
           user_id: userId,
-          gender: formData.gender,
           body_fat_percent: formData.bodyFatPercent,
           fitness_goal: formData.fitnessGoal,
           secondary_goal: formData.secondaryGoal,
@@ -106,6 +105,7 @@ export function WorkoutPlannerForm({ userId, existingBodyFat, onComplete }: Prop
           days_per_week: formData.daysPerWeek,
           injury_info: formData.injuryInfo || null,
           lifestyle: formData.lifestyle,
+          athlete_type: formData.athleteType,
         },
         { onConflict: 'user_id' }
       )
@@ -115,7 +115,9 @@ export function WorkoutPlannerForm({ userId, existingBodyFat, onComplete }: Prop
     // Build Gemini prompt
     const prompt = `You are an expert personal trainer. Create a weekly workout plan as JSON only. Return raw JSON with no markdown formatting and no code blocks.
 
-User details: age ${age}, gender ${formData.gender}, weight ${weight}kg, height ${height}cm, body fat ${formData.bodyFatPercent}%, main goal: ${formData.fitnessGoal}, secondary goal: ${formData.secondaryGoal || 'none'}, experience: ${formData.experienceLevel}, training days per week: ${formData.daysPerWeek}, lifestyle: ${formData.lifestyle}, injuries or limitations: ${formData.injuryInfo || 'none'}.
+User details: age ${age}, gender ${gender || 'not specified'}, weight ${weight}kg, height ${height}cm, body fat ${formData.bodyFatPercent}%, main goal: ${formData.fitnessGoal}, secondary goal: ${formData.secondaryGoal || 'none'}, experience: ${formData.experienceLevel}, training days per week: ${formData.daysPerWeek}, lifestyle: ${formData.lifestyle}, training style: ${formData.athleteType}, injuries or limitations: ${formData.injuryInfo || 'none'}.
+
+Important: Design the workout plan specifically following how a ${formData.athleteType} trains — the exercise selection, rep ranges, rest periods, and weekly structure should reflect this athlete type.
 
 Important scheduling rules:
 - Spread workout days evenly across the week. Never put all rest days together at the end.
@@ -268,17 +270,15 @@ Return exactly this JSON structure and nothing else:
           <h2 className="text-xl font-bold text-foreground">
             {getStepTitle(currentStep)}
           </h2>
-          <p className="text-xs text-muted-foreground">Step {currentStep} of 7</p>
+          <p className="text-xs text-muted-foreground">Step {currentStep} of 8</p>
         </div>
-        <Progress value={(currentStep / 7) * 100} className="h-2" />
+        <Progress value={(currentStep / 8) * 100} className="h-2" />
       </div>
 
       {/* Step content */}
       <div className="mb-8">
         {currentStep === 1 && (
           <Step1Gender
-            selected={formData.gender}
-            onChange={(gender) => updateFormData({ gender })}
             bodyFatPercent={formData.bodyFatPercent}
             onBodyFatChange={(bodyFatPercent) => updateFormData({ bodyFatPercent })}
           />
@@ -290,33 +290,39 @@ Return exactly this JSON structure and nothing else:
           />
         )}
         {currentStep === 3 && (
-          <Step3SecondaryGoal
+          <Step3TrainingStyle
+            selected={formData.athleteType}
+            onChange={(athleteType) => updateFormData({ athleteType })}
+          />
+        )}
+        {currentStep === 4 && (
+          <Step4SecondaryGoal
             selected={formData.secondaryGoal}
             onChange={(secondaryGoal) => updateFormData({ secondaryGoal })}
             onSkip={() => handleNext()}
           />
         )}
-        {currentStep === 4 && (
-          <Step4Experience
+        {currentStep === 5 && (
+          <Step5Experience
             selected={formData.experienceLevel}
             onChange={(experienceLevel) => updateFormData({ experienceLevel })}
           />
         )}
-        {currentStep === 5 && (
-          <Step5WorkoutDays
+        {currentStep === 6 && (
+          <Step6WorkoutDays
             selected={formData.daysPerWeek}
             onChange={(daysPerWeek) => updateFormData({ daysPerWeek })}
           />
         )}
-        {currentStep === 6 && (
-          <Step6Injuries
+        {currentStep === 7 && (
+          <Step7Injuries
             value={formData.injuryInfo}
             onChange={(injuryInfo) => updateFormData({ injuryInfo })}
             onSkip={() => handleNext()}
           />
         )}
-        {currentStep === 7 && (
-          <Step7Lifestyle
+        {currentStep === 8 && (
+          <Step8Lifestyle
             selected={formData.lifestyle}
             onChange={(lifestyle) => updateFormData({ lifestyle })}
           />
@@ -335,7 +341,7 @@ Return exactly this JSON structure and nothing else:
             Back
           </Button>
         )}
-        {currentStep < 7 ? (
+        {currentStep < 8 ? (
           <Button
             onClick={handleNext}
             disabled={!isStepValid(currentStep, formData)}
@@ -347,7 +353,7 @@ Return exactly this JSON structure and nothing else:
         ) : (
           <Button
             onClick={handleGeneratePlan}
-            disabled={!isStepValid(7, formData)}
+            disabled={!isStepValid(8, formData)}
             className="flex-1 bg-gradient-to-r from-[#00ff88] to-[#00cc6a] text-black font-semibold disabled:opacity-50 py-3"
           >
             Generate My Workout Plan ✨
@@ -359,49 +365,24 @@ Return exactly this JSON structure and nothing else:
 }
 
 function Step1Gender({
-  selected,
-  onChange,
   bodyFatPercent,
   onBodyFatChange,
 }: {
-  selected: string | null
-  onChange: (gender: 'male' | 'female' | 'other') => void
   bodyFatPercent: number | null
   onBodyFatChange: (value: number | null) => void
 }) {
   return (
-    <div className="space-y-6">
-      <div>
-        <label className="block text-sm font-medium text-foreground mb-3">Gender</label>
-        <div className="grid grid-cols-3 gap-3">
-          {(['male', 'female', 'other'] as const).map((gender) => (
-            <button
-              key={gender}
-              onClick={() => onChange(gender)}
-              className={`p-4 rounded-xl border-2 font-semibold capitalize transition ${
-                selected === gender
-                  ? 'border-[#00ff88] text-foreground bg-[#00ff88]/10'
-                  : 'border-border text-foreground bg-card hover:border-border/80'
-              }`}
-            >
-              {gender}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-foreground mb-2">
-          Body Fat % <span className="text-muted-foreground">(optional)</span>
-        </label>
-        <input
-          type="number"
-          value={bodyFatPercent ?? ''}
-          onChange={(e) => onBodyFatChange(e.target.value ? parseFloat(e.target.value) : null)}
-          placeholder="e.g. 20"
-          className="w-full px-4 py-2.5 bg-muted border border-border rounded-xl text-foreground placeholder:text-muted-foreground"
-        />
-      </div>
+    <div>
+      <label className="block text-sm font-medium text-foreground mb-2">
+        Body Fat % <span className="text-muted-foreground">(optional)</span>
+      </label>
+      <input
+        type="number"
+        value={bodyFatPercent ?? ''}
+        onChange={(e) => onBodyFatChange(e.target.value ? parseFloat(e.target.value) : null)}
+        placeholder="e.g. 20"
+        className="w-full px-4 py-2.5 bg-muted border border-border rounded-xl text-foreground placeholder:text-muted-foreground"
+      />
     </div>
   )
 }
@@ -451,7 +432,62 @@ function Step2Goal({
   )
 }
 
-function Step3SecondaryGoal({
+function Step3TrainingStyle({
+  selected,
+  onChange,
+}: {
+  selected: string | null
+  onChange: (athleteType: string) => void
+}) {
+  const athleteTypes = [
+    {
+      name: 'Hybrid Athlete',
+      description: 'A balanced mix of strength training and cardio. Build muscle while improving endurance and overall athleticism.',
+    },
+    {
+      name: 'Calisthenics Athlete',
+      description: 'Master your bodyweight. Build strength, control, and muscle using only bodyweight movements and minimal equipment.',
+    },
+    {
+      name: 'Bodybuilder',
+      description: 'Focus on muscle hypertrophy and aesthetics. High volume training to maximize muscle size and definition.',
+    },
+    {
+      name: 'Endurance Athlete',
+      description: 'Build your cardiovascular engine. Improve stamina, VO2 max, and the ability to perform for long durations.',
+    },
+  ]
+
+  return (
+    <div className="space-y-4">
+      <label className="block text-sm font-medium text-foreground mb-3">
+        How do you want to train?
+      </label>
+      <div className="space-y-3">
+        {athleteTypes.map(({ name, description }) => (
+          <button
+            key={name}
+            onClick={() => onChange(name)}
+            className={`w-full p-4 rounded-xl border-2 text-left transition ${
+              selected === name
+                ? 'border-[#00ff88] bg-[#00ff88]/10'
+                : 'border-border bg-card hover:border-border/80'
+            }`}
+          >
+            <p className={`font-semibold mb-1 ${
+              selected === name ? 'text-[#00ff88]' : 'text-foreground'
+            }`}>
+              {name}
+            </p>
+            <p className="text-xs text-muted-foreground">{description}</p>
+          </button>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function Step4SecondaryGoal({
   selected,
   onChange,
   onSkip,
@@ -501,7 +537,7 @@ function Step3SecondaryGoal({
   )
 }
 
-function Step4Experience({
+function Step5Experience({
   selected,
   onChange,
 }: {
@@ -539,7 +575,7 @@ function Step4Experience({
   )
 }
 
-function Step5WorkoutDays({
+function Step6WorkoutDays({
   selected,
   onChange,
 }: {
@@ -573,7 +609,7 @@ function Step5WorkoutDays({
   )
 }
 
-function Step6Injuries({
+function Step7Injuries({
   value,
   onChange,
   onSkip,
@@ -606,7 +642,7 @@ function Step6Injuries({
   )
 }
 
-function Step7Lifestyle({
+function Step8Lifestyle({
   selected,
   onChange,
 }: {
@@ -654,11 +690,12 @@ function getStepTitle(step: number): string {
   const titles: Record<number, string> = {
     1: 'Your Body',
     2: 'Your Main Goal',
-    3: 'Secondary Goal (Optional)',
-    4: 'Your Experience',
-    5: 'Workout Days',
-    6: 'Any Injuries?',
-    7: 'Your Lifestyle',
+    3: 'Training Style',
+    4: 'Secondary Goal (Optional)',
+    5: 'Your Experience',
+    6: 'Workout Days',
+    7: 'Any Injuries?',
+    8: 'Your Lifestyle',
   }
   return titles[step] || ''
 }
@@ -666,18 +703,20 @@ function getStepTitle(step: number): string {
 function isStepValid(step: number, formData: FormData): boolean {
   switch (step) {
     case 1:
-      return formData.gender !== null
+      return true // Body Fat is optional
     case 2:
       return formData.fitnessGoal !== null
     case 3:
-      return true // Optional step
+      return formData.athleteType !== null
     case 4:
-      return formData.experienceLevel !== null
-    case 5:
-      return formData.daysPerWeek !== null
-    case 6:
       return true // Optional step
+    case 5:
+      return formData.experienceLevel !== null
+    case 6:
+      return formData.daysPerWeek !== null
     case 7:
+      return true // Optional step
+    case 8:
       return formData.lifestyle !== null
     default:
       return false

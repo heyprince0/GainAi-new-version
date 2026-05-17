@@ -20,6 +20,7 @@ interface Profile {
   weight: number
   height: number
   goal: string
+  gender?: string
   // renamed fields for goals stored in Supabase
   calorie_goal: number
   protein_goal: number
@@ -117,7 +118,7 @@ export function Dashboard() {
         // Fetch profile
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
-          .select('id, name, age, weight, height, goal, calorie_goal, protein_goal, carbs_goal, fat_goal, fiber_goal, bmr, tdee, created_at')
+          .select('id, name, age, weight, height, goal, gender, calorie_goal, protein_goal, carbs_goal, fat_goal, fiber_goal, bmr, tdee, created_at')
           .eq('id', user.id)
           .single()
 
@@ -668,6 +669,7 @@ function EditProfileTab({
     weight: profile.weight?.toString() || '',
     height: profile.height?.toString() || '',
     goal: profile.goal || 'maintain',
+    gender: profile.gender || '',
   })
 
   useEffect(() => {
@@ -716,10 +718,11 @@ function EditProfileTab({
           weight,
           height,
           goal: form.goal,
+          gender: form.gender || null,
           ...goals,
         }, { onConflict: 'id' })
       if (err) throw err
-      onSaved({ ...profile, name: form.name, age, weight, height, goal: form.goal, ...goals })
+      onSaved({ ...profile, name: form.name, age, weight, height, goal: form.goal, gender: form.gender || undefined, ...goals })
       setSuccess(true)
       setTimeout(() => setSuccess(false), 3000)
     } catch (err) {
@@ -748,6 +751,19 @@ function EditProfileTab({
                 placeholder='Your name'
                 required
               />
+            </div>
+            <div>
+              <label className='mb-1 block text-xs font-medium text-muted-foreground'>Gender</label>
+              <select
+                value={form.gender}
+                onChange={(e) => setForm({ ...form, gender: e.target.value })}
+                className='w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none'
+              >
+                <option value=''>Select gender</option>
+                <option value='Male'>Male</option>
+                <option value='Female'>Female</option>
+                <option value='Other'>Other</option>
+              </select>
             </div>
             <div className='grid grid-cols-2 gap-3'>
               <div>
