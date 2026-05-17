@@ -445,16 +445,16 @@ function Step3TrainingStyle({
       description: 'A balanced mix of strength training and cardio. Build muscle while improving endurance and overall athleticism.',
     },
     {
+       name: 'Bodybuilder',
+      description: 'Focus on muscle hypertrophy and aesthetics. High volume training to maximize muscle size and definition.',
+    },
+    {
       name: 'Calisthenics Athlete',
       description: 'Master your bodyweight. Build strength, control, and muscle using only bodyweight movements and minimal equipment.',
     },
     {
-      name: 'Bodybuilder',
-      description: 'Focus on muscle hypertrophy and aesthetics. High volume training to maximize muscle size and definition.',
-    },
-    {
-      name: 'Endurance Athlete',
-      description: 'Build your cardiovascular engine. Improve stamina, VO2 max, and the ability to perform for long durations.',
+      name: 'Feminine Strength',
+      description: 'Sculpt and strengthen with a focus on glutes, legs, and upper body toning. A balanced mix of resistance training designed specifically for women.',
     },
   ]
 
@@ -497,11 +497,11 @@ function Step4SecondaryGoal({
   onSkip: () => void
 }) {
   const goals = [
-    { id: 'Six Pack', emoji: '🎯' },
-    { id: 'Bigger Arms', emoji: '💪' },
-    { id: 'Wider Shoulders', emoji: '🦅' },
-    { id: 'Better Chest', emoji: '🏋️' },
-    { id: 'Leg Strength', emoji: '🦵' },
+    { id: 'Six Pack' },
+    { id: 'Bigger Arms' },
+    { id: 'Wider Shoulders' },
+    { id: 'Better Chest' },
+    { id: 'Leg Strength' },
   ]
 
   return (
