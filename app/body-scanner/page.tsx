@@ -4,6 +4,7 @@ import { useAuth } from "@/lib/auth-context"
 import { Navbar } from "@/components/navbar"
 import { BodyScanner } from "@/components/body-scanner"
 import { BottomNav } from "@/components/bottom-nav"
+import { AiChat } from "@/components/ai-chat"
 
 export default function BodyScannerPage() {
   const { user, loading } = useAuth()
@@ -40,6 +41,7 @@ export default function BodyScannerPage() {
         <BodyScanner />
       </main>
       <BottomNav />
+      <AiChat />
     </div>
   )
 }
