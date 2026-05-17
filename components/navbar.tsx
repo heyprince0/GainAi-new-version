@@ -10,13 +10,6 @@ import { useState, useEffect } from "react"
 import { cn } from "@/lib/utils"
 import Image from "next/image"
 
-const navLinks = [
-  { href: "/", label: "Home" },
-  { href: "/food-scanner", label: "Food Scanner" },
-  { href: "/body-scanner", label: "Body Scanner" },
-  { href: "/dashboard", label: "Dashboard" },
-]
-
 export function Navbar() {
   const pathname = usePathname()
   const { theme, setTheme } = useTheme()
@@ -38,14 +31,7 @@ export function Navbar() {
     { href: "/download", label: "Download App" },
   ]
 
-  const homePageLinks = [
-    { href: "/", label: "Home" },
-    { href: "/food-scanner", label: "Food Scanner" },
-    { href: "/body-scanner", label: "Body Scanner" },
-    { href: "/download", label: "Download App" },
-  ]
-
-  const linksToShow = publicLinks
+  const linksToShow = user ? authenticatedLinks : publicLinks
 
   useEffect(() => {
     setMounted(true)
@@ -108,7 +94,7 @@ export function Navbar() {
               )}
             </Button>
           )}
-          {user && (
+          {user ? (
             <Button
               variant="ghost"
               size="icon"
@@ -119,6 +105,14 @@ export function Navbar() {
             >
               <LogOut className="h-4 w-4" />
             </Button>
+          ) : (
+            <Link href="/">
+              <Button
+                className="rounded-lg bg-gradient-to-r from-[#00ff88] to-[#00cc6a] text-black font-semibold text-sm px-4"
+              >
+                Sign In
+              </Button>
+            </Link>
           )}
           <Button
             variant="ghost"
@@ -149,6 +143,13 @@ export function Navbar() {
               {link.label}
             </Link>
           ))}
+          {!user && (
+            <Link href="/" onClick={() => setMobileOpen(false)}>
+              <Button className="w-full mt-2 rounded-lg bg-gradient-to-r from-[#00ff88] to-[#00cc6a] text-black font-semibold">
+                Sign In
+              </Button>
+            </Link>
+          )}
         </div>
       )}
     </header>
