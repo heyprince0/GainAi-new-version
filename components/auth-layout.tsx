@@ -3,9 +3,11 @@
 import { useEffect } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { useAuth } from '@/lib/auth-context'
+import { AuthScreen } from './auth-screen'
+import { ProfileSetup } from './profile-setup'
 
 export function AuthLayout({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuth()
+  const { user, loading, profileLoading, hasProfile } = useAuth()
   const router = useRouter()
   const pathname = usePathname()
 
@@ -15,16 +17,14 @@ export function AuthLayout({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (loading) return
-    if (!user && isProtectedRoute) {
-      router.replace('/')
-      return
-    }
+    // If logged in and on home page → go to dashboard
     if (user && isHomePage) {
       router.replace('/dashboard')
       return
     }
   }, [user, loading, pathname])
 
+  // Show spinner while loading
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -34,6 +34,16 @@ export function AuthLayout({ children }: { children: React.ReactNode }) {
         </div>
       </div>
     )
+  }
+
+  // If not logged in and trying to access protected route → show login screen
+  if (!user && isProtectedRoute) {
+    return <AuthScreen />
+  }
+
+  // If logged in but no profile yet → show profile setup
+  if (user && !profileLoading && !hasProfile && isProtectedRoute) {
+    return <ProfileSetup />
   }
 
   return <>{children}</>
