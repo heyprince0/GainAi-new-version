@@ -253,17 +253,35 @@ export function TodayWorkoutCard({ userId, onCreatePlan }: Props) {
 
                 {/* Exercises */}
                 {todayWorkout.exercises.map((exercise, idx) => (
-                  <div key={idx} className="p-4 bg-card border border-border rounded-xl">
-                    <div className="flex items-start justify-between mb-2">
-                      <h3 className="font-semibold text-foreground">{cleanName(exercise.name)}</h3>
-                      <Badge className="bg-primary/20 text-primary border-0 text-xs">
-                        {exercise.sets}x {exercise.reps}
-                      </Badge>
-                    </div>
-                    <p className="text-xs text-muted-foreground mb-2">Rest: {exercise.rest_seconds}s</p>
-                    <p className="text-xs text-muted-foreground italic">{exercise.notes}</p>
-                  </div>
-                ))}
+  <div key={idx} className="p-4 bg-card border border-border rounded-xl">
+    <div className="flex items-start justify-between mb-2">
+      <h3 className="font-semibold text-foreground">{cleanName(exercise.name)}</h3>
+      <div className="flex items-center gap-2">
+        <Badge className="bg-primary/20 text-primary border-0 text-xs">
+          {exercise.sets}x {exercise.reps}
+        </Badge>
+        <button
+          onClick={() => {
+            const slug = cleanName(exercise.name)
+              .toLowerCase()
+              .replace(/[^a-z0-9]+/g, '-')
+              .replace(/(^-|-$)/g, '')
+            window.open(`https://musclewiki.com/exercise/${slug}`, '_blank')
+          }}
+          className="text-muted-foreground hover:text-primary transition-colors"
+          title="View on MuscleWiki"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="11" cy="11" r="8"/>
+            <path d="m21 21-4.35-4.35"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+    <p className="text-xs text-muted-foreground mb-2">Rest: {exercise.rest_seconds}s</p>
+    <p className="text-xs text-muted-foreground italic">{exercise.notes}</p>
+  </div>
+))}
 
                 {/* Cool-down */}
                 <div className="p-4 bg-card border border-border rounded-xl">
