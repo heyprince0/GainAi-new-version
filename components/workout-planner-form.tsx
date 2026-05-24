@@ -501,6 +501,7 @@ function Step4SecondaryGoal({
     { id: 'Bigger Arms' },
     { id: 'Wider Shoulders' },
     { id: 'Improve Cardio' },
+    { id: 'Wider neck' },
     { id: 'Better Chest' },
     { id: 'Leg Strength' },
   ]
