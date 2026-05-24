@@ -544,7 +544,7 @@ export function Dashboard() {
       </Tabs>
 
       {showPlanner && (
-        <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4 sm:p-4">
+        <div className="fixed inset-0 z-[10000] bg-background/80 backdrop-blur-sm flex items-center justify-center p-4 sm:p-4">
           <div className="w-full max-w-lg sm:rounded-2xl rounded-none sm:max-h-[90vh] max-h-screen overflow-y-auto bg-background border border-border">
             <WorkoutPlannerForm
               userId={user?.id ?? ''}
