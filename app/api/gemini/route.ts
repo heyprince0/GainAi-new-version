@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 
 const GEMINI_ENDPOINT =
-  "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite-preview:generateContent"
+  "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent"
 
 export async function POST(request: Request) {
   const apiKey = process.env.GEMINI_API_KEY || process.env.NEXT_PUBLIC_GEMINI_API_KEY
