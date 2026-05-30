@@ -20,16 +20,16 @@ export function FuelScoreCard({
   let scoreColor = ''
   if (todayScore !== null) {
     if (todayScore >= 90) {
-      scoreLabel = '🔥 Excellent'
+      scoreLabel = '🔥 Excellent, Keep it up!'
       scoreColor = '#22c55e'
     } else if (todayScore >= 70) {
-      scoreLabel = '✅ Good'
+      scoreLabel = 'Great effort! Stay consistent and keep going!
       scoreColor = '#86efac'
     } else if (todayScore >= 50) {
-      scoreLabel = '⚠️ Needs Work'
+      scoreLabel = 'Stay focused! Clean meals will get you there!'
       scoreColor = '#facc15'
     } else {
-      scoreLabel = '❌ Poor'
+      scoreLabel = 'Your body deserves better food!'
       scoreColor = '#ef4444'
     }
   }
@@ -62,7 +62,7 @@ export function FuelScoreCard({
         <div className='mb-2 flex items-center gap-2'>
           <Zap className='h-4 w-4 text-primary' />
           <span className='text-[10px] font-medium uppercase tracking-wider text-muted-foreground'>
-            Fuel Score
+            Overall Diet Score
           </span>
         </div>
         <p className='text-xl font-bold text-foreground'>
