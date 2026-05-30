@@ -60,12 +60,33 @@ export const saveFuelScore = async (
     : 5
   const qualityScore = (avgHealthRaw / 10) * 100 * 0.30
 
-  const fuelScore = Math.round(macroScore + qualityScore)
+  // Fetch yesterday's score to carry forward
+const yesterday = new Date()
+yesterday.setDate(yesterday.getDate() - 1)
+const yesterdayDate = new Intl.DateTimeFormat('en-CA', {
+  timeZone: 'Asia/Kolkata',
+  year: 'numeric', month: '2-digit', day: '2-digit',
+}).format(yesterday)
 
-  await supabase.from('fuel_scores').upsert({
-    user_id: userId,
-    score_date: scoreDate,
-    fuel_score: fuelScore,
+const { data: yesterdayData } = await supabase
+  .from('fuel_scores')
+  .select('fuel_score')
+  .eq('user_id', userId)
+  .eq('score_date', yesterdayDate)
+  .single()
+
+const yesterdayScore = yesterdayData?.fuel_score ?? 50 // default 50 for new users
+
+// Today's meal quality effect (-25 to +25 range)
+const todayEffect = Math.round((macroScore + qualityScore) - 50)
+
+// Carry forward and adjust, clamp between 0-100
+const fuelScore = Math.min(100, Math.max(0, yesterdayScore + todayEffect))
+
+await supabase.from('fuel_scores').upsert({
+  user_id: userId,
+  score_date: scoreDate,
+  fuel_score: fuelScore,
     calorie_score: calorieScore,
     protein_score: proteinScore,
     carbs_score: carbsScore,
