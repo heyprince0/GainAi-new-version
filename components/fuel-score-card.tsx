@@ -66,8 +66,8 @@ export function FuelScoreCard({
           </span>
         </div>
         <p className='text-xl font-bold text-foreground'>
-          {todayScore !== null ? `${todayScore}%` : '—'}
-        </p>
+  {todayScore !== null ? `${todayScore}%` : yesterdayScore !== null ? `${yesterdayScore}%` : '—'}
+</p>
         {scoreLabel && (
           <p className='mt-0.5 text-[10px] text-foreground' style={{ color: scoreColor }}>
             {scoreLabel}
