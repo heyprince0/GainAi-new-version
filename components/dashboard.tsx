@@ -378,7 +378,7 @@ export function Dashboard() {
         <StatCard
           icon={Target}
           label='Protein'
-          value={`${todayStats.protein}g`}
+          value={`${Math.round(todayStats.protein)}g`}
           subtitle={`of ${profile.protein_goal}g goal`}
           progress={proteinPercent}
         />
