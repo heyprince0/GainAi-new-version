@@ -84,6 +84,7 @@ export const saveFuelScore = async (
   // todayRawScore 50  →   0 (average day, no change)
   // todayRawScore 0   → -25 (terrible day, score drops)
   const todayEffect = Math.round(((todayRawScore - 50) / 50) * 25)
+const finalEffect = qualityScore < 50 && todayEffect > 0 ? 0 : todayEffect
 
   // ── Step 7: Final score clamped 0-100 ─────────────────────
   const fuelScore = Math.min(100, Math.max(0, baseScore + finalEffect))
