@@ -16,6 +16,23 @@ export function FuelScoreCard({
     todayScore !== null && yesterdayScore !== null ? todayScore - yesterdayScore : null
 
   // Score label logic
+  let scoreLabel = ''
+  let scoreColor = ''
+  if (todayScore !== null) {
+    if (todayScore >= 90) {
+      scoreLabel = '🔥 Excellent, Keep it up!'
+      scoreColor = '#22c55e'
+    } else if (todayScore >= 70) {
+      scoreLabel = '✅ Good'
+      scoreColor = '#86efac'
+    } else if (todayScore >= 50) {
+      scoreLabel = `Need focus`
+      scoreColor = '#facc15'
+    } else {
+      scoreLabel = `Cut Out Junk Food`
+      scoreColor = '#ef4444'
+    }
+  }
   
 
   // Diff line logic
