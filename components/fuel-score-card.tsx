@@ -33,7 +33,7 @@ export function FuelScoreCard({
       scoreColor = '#ef4444'
     }
   }
-  
+
 
   // Diff line logic
   let diffText = ''
@@ -43,7 +43,7 @@ export function FuelScoreCard({
       diffText = `↑ +${diff}% Better today`
       diffColor = '#22c55e'
     } else if (diff < 0) {
-      diffText = `↓ ${diff}% Dropped today`
+      diffText = `↓ ${Math.abs(diff)}% Dropped today`
       diffColor = '#ef4444'
     } else {
       diffText = '→ Same as yesterday'
