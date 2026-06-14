@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Activity, TrendingUp, Flame, Target, Calendar, Loader as Loader2, User, Dumbbell, Zap } from 'lucide-react'
+import { Activity, TrendingUp, Flame, Target, Calendar, Loader as Loader2, User, Dumbbell, Zap, Plus, Utensils } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { Badge } from '@/components/ui/badge'
@@ -13,6 +13,7 @@ import { useAuth } from '@/lib/auth-context'
 import { TodayWorkoutCard } from '@/components/today-workout-card'
 import { WorkoutPlannerForm } from '@/components/workout-planner-form'
 import { FuelScoreCard } from '@/components/fuel-score-card'
+import { LogMealDialog } from '@/components/log-meal-dialog'
 
 interface Profile {
   id: string
@@ -86,12 +87,84 @@ export function Dashboard() {
   const [bodyScan, setBodyScan] = useState<BodyScan | null>(null)
   const [showPlanner, setShowPlanner] = useState(false)
   const [hasWorkoutPlan, setHasWorkoutPlan] = useState(false)
+  const [showLogMeal, setShowLogMeal] = useState(false)
   // compute displayName with fallbacks
   const displayName = profile?.name ||
     user?.user_metadata?.full_name ||
     user?.user_metadata?.name ||
     user?.email?.split('@')[0] ||
     'User'
+
+  const refetchData = async () => {
+    if (!user) return
+
+    try {
+      // Fetch today's scans
+      const getTodayIST = () => {
+        const now = new Date()
+        const istDate = new Intl.DateTimeFormat('en-CA', {
+          timeZone: 'Asia/Kolkata',
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit'
+        }).format(now)
+        const istMidnightUTC = new Date(`${istDate}T00:00:00+05:30`)
+        return istMidnightUTC.toISOString()
+      }
+
+      const { data: todayData } = await supabase
+        .from('food_scans')
+        .select('*')
+        .eq('user_id', user.id)
+        .gte('scanned_at', getTodayIST())
+        .order('scanned_at', { ascending: false })
+
+      if (todayData) {
+        setTodayScans(todayData)
+        const todayCalories = todayData.reduce((sum, s) => sum + (s.calories ?? 0), 0) ?? 0
+        const todayProtein = todayData.reduce((sum, s) => sum + (s.protein ?? 0), 0) ?? 0
+        const todayCarbs = todayData.reduce((sum, s) => sum + (s.carbs ?? 0), 0) ?? 0
+        const todayFats = todayData.reduce((sum, s) => sum + (s.fats ?? 0), 0) ?? 0
+        setTodayStats({ calories: todayCalories, protein: todayProtein, carbs: todayCarbs, fats: todayFats })
+      }
+
+      // Fetch all food scans for streak
+      const { data: foodData } = await supabase
+        .from('food_scans')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('scanned_at', { ascending: false })
+
+      if (foodData) setFoodScans(foodData)
+
+      // Fetch fuel scores
+      const istDateKey = (iso: string) =>
+        new Intl.DateTimeFormat('en-CA', {
+          timeZone: 'Asia/Kolkata',
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+        }).format(new Date(iso))
+
+      const todayDate = istDateKey(new Date().toISOString())
+      const yesterdayDate = istDateKey(new Date(Date.now() - 86400000).toISOString())
+
+      const { data: fuelData } = await supabase
+        .from('fuel_scores')
+        .select('score_date, fuel_score')
+        .eq('user_id', user.id)
+        .in('score_date', [todayDate, yesterdayDate])
+
+      if (fuelData) {
+        const todayFuel = fuelData.find((r) => r.score_date === todayDate)?.fuel_score ?? null
+        const yesterdayFuel = fuelData.find((r) => r.score_date === yesterdayDate)?.fuel_score ?? null
+        setTodayFuelScore(todayFuel)
+        setYesterdayFuelScore(yesterdayFuel)
+      }
+    } catch (error) {
+      console.error('Error refetching data:', error)
+    }
+  }
 
   const getScoreColor = (score: number) => {
     if (score >= 8) return '#00ff88'
@@ -467,6 +540,15 @@ export function Dashboard() {
                 )}
               </CardContent>
             </Card>
+
+            {/* Log Meal Button */}
+            <button
+              onClick={() => setShowLogMeal(true)}
+              className='w-full lg:col-span-2 py-3 bg-gradient-to-r from-[#00ff88] to-[#00cc6a] text-black font-semibold rounded-xl text-sm flex items-center justify-center gap-2 hover:opacity-90 transition-opacity'
+            >
+              <Plus className='h-4 w-4' />
+              Log a Meal
+            </button>
           </div>
 
 
@@ -583,6 +665,12 @@ export function Dashboard() {
           </div>
         </div>
       )}
+
+      <LogMealDialog
+        open={showLogMeal}
+        onOpenChange={setShowLogMeal}
+        onMealSaved={refetchData}
+      />
     </div>
   )
 }
