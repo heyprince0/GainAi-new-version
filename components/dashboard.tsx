@@ -516,7 +516,7 @@ export function Dashboard() {
           </div>
 
             {/* Today's Meals - Overview */}
-            <Card className='border-border/50 mt-2'>
+            <Card className='border-border/50 mt-4'>
               <CardContent className='p-2'>
                 {todayScans.length > 0 ? (
                   todayScans.map((scan) => {
