@@ -531,7 +531,7 @@ export function Dashboard() {
                           borderRadius: '10px',
                           borderLeft: `4px solid ${color}`,
                           background: `${color}12`,
-                          marginBottom: '8px',
+                          marginBottom: '4px',
                         }}
                       >
                         <div style={{ fontWeight: '600', marginBottom: '4px' }}>
