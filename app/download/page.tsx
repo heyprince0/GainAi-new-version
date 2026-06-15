@@ -1,6 +1,6 @@
 'use client'
 
-import { Download, Smartphone, Star, Zap, Shield, CheckCircle, Wifi, MonitorSmartphone } from "lucide-react"
+import { Download, Smartphone, Star, Zap, Shield, CheckCircle, Wifi, MonitorSmartphone, Flame, Dumbbell, HeartPulse, Target, MessageCircle, Camera, Gauge, Clipboard, BarChart3, Grid3x3, LogOut, Moon, Menu, Scan } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
@@ -108,32 +108,197 @@ export default function DownloadPage() {
                 </div>
               </div>
 
-              {/* Phone mockup */}
+              {/* Phone mockup with actual dashboard */}
               <div className="flex flex-col items-center gap-4 flex-shrink-0">
-                <div className="relative flex h-[360px] w-[180px] items-center justify-center rounded-[2.5rem] border-4 border-foreground/10 bg-card shadow-2xl shadow-primary/10">
-                  <div className="absolute -top-1.5 left-1/2 h-3 w-16 -translate-x-1/2 rounded-full bg-foreground/10" />
-                  <div className="flex flex-col items-center gap-4 px-5 text-center">
-                    <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-primary/10 shadow-inner">
-                      <span className="text-4xl font-black text-primary">G</span>
+                <div className="relative flex flex-col h-[600px] w-[300px] rounded-[2.5rem] border-8 border-foreground bg-white shadow-2xl shadow-black/20 overflow-hidden">
+                  {/* Status bar */}
+                  <div className="bg-foreground text-white px-4 py-1.5 text-xs font-medium flex justify-between items-center h-6">
+                    <span>12:41</span>
+                    <span>4G • 100%</span>
+                  </div>
+
+                  {/* App content */}
+                  <div className="flex-1 overflow-hidden flex flex-col bg-white">
+                    {/* Header */}
+                    <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
+                      <div className="flex items-center gap-2">
+                        <div className="w-6 h-6 bg-primary/15 rounded-lg flex items-center justify-center">
+                          <Dumbbell className="h-4 w-4 text-primary" />
+                        </div>
+                        <div className="flex gap-0.5">
+                          <span className="font-bold text-sm text-black">Gain</span>
+                          <span className="font-bold text-sm text-primary">Ai</span>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Moon className="h-4 w-4 text-gray-600" />
+                        <LogOut className="h-4 w-4 text-gray-600" />
+                        <Menu className="h-4 w-4 text-gray-600" />
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-base font-bold text-foreground">GainAi</p>
-                      <p className="text-[11px] text-muted-foreground leading-relaxed mt-1">
-                        AI Nutrition &amp; Body Analysis
-                      </p>
+
+                    {/* Scrollable content */}
+                    <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4 text-sm">
+                      {/* Welcome */}
+                      <div>
+                        <h2 className="text-lg font-bold text-black">Welcome back, Prince</h2>
+                        <p className="text-xs text-gray-600 mt-0.5">Here&apos;s your fitness overview</p>
+                      </div>
+
+                      {/* Streak */}
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg">🔥</span>
+                        <span className="font-semibold text-black">4<span className="font-normal text-gray-600 ml-1">day streak</span></span>
+                      </div>
+
+                      {/* Workout card */}
+                      <div className="border border-gray-200 rounded-xl p-3 bg-gray-50">
+                        <div className="flex items-start justify-between mb-2">
+                          <div className="flex items-start gap-2 flex-1">
+                            <HeartPulse className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                            <div>
+                              <p className="font-bold text-xs text-black leading-tight">Monday - Lower Strength &amp; Sprint</p>
+                            </div>
+                          </div>
+                          <span className="bg-primary/20 text-primary text-xs font-semibold px-2 py-1 rounded-full whitespace-nowrap ml-2">Leg Power</span>
+                        </div>
+                        <p className="text-xs text-gray-600 ml-7 mb-3">5 exercises · 90 mins</p>
+                        <button className="w-full bg-primary text-white text-xs font-bold py-2 rounded-lg hover:bg-primary/90 transition-colors">View Workout →</button>
+                      </div>
+
+                      {/* Stats grid */}
+                      <div className="grid grid-cols-2 gap-3">
+                        {/* Calories */}
+                        <div className="border border-gray-200 rounded-lg p-3 bg-white">
+                          <div className="flex items-center gap-1.5 mb-2">
+                            <Flame className="h-4 w-4 text-primary" />
+                            <span className="text-xs font-semibold text-gray-600">CALORIES</span>
+                          </div>
+                          <p className="text-xl font-bold text-black">350</p>
+                          <p className="text-xs text-gray-500 mt-0.5">of 2,708 goal</p>
+                          <div className="w-full h-1.5 bg-gray-200 rounded-full mt-2 overflow-hidden">
+                            <div className="h-full w-1/3 bg-primary rounded-full"></div>
+                          </div>
+                        </div>
+
+                        {/* Protein */}
+                        <div className="border border-gray-200 rounded-lg p-3 bg-white">
+                          <div className="flex items-center gap-1.5 mb-2">
+                            <Target className="h-4 w-4 text-primary" />
+                            <span className="text-xs font-semibold text-gray-600">PROTEIN</span>
+                          </div>
+                          <p className="text-xl font-bold text-black">16g</p>
+                          <p className="text-xs text-gray-500 mt-0.5">of 119g goal</p>
+                          <div className="w-full h-1.5 bg-gray-200 rounded-full mt-2 overflow-hidden">
+                            <div className="h-full w-1/3 bg-primary rounded-full"></div>
+                          </div>
+                        </div>
+
+                        {/* Diet Accuracy */}
+                        <div className="border border-gray-200 rounded-lg p-3 bg-white">
+                          <div className="flex items-center gap-1.5 mb-2">
+                            <Zap className="h-4 w-4 text-primary" />
+                            <span className="text-xs font-semibold text-gray-600">ACCURACY</span>
+                          </div>
+                          <p className="text-xl font-bold text-black">64%</p>
+                          <p className="text-xs text-orange-500 font-medium mt-0.5">Need focus</p>
+                          <p className="text-xs text-primary mt-1">↑ +12% Better</p>
+                        </div>
+
+                        {/* Body Fat */}
+                        <div className="border border-gray-200 rounded-lg p-3 bg-white">
+                          <div className="flex items-center gap-1.5 mb-2">
+                            <HeartPulse className="h-4 w-4 text-primary" />
+                            <span className="text-xs font-semibold text-gray-600">BODY FAT</span>
+                          </div>
+                          <p className="text-xl font-bold text-black">10%</p>
+                          <p className="text-xs text-gray-500 mt-0.5">latest reading</p>
+                        </div>
+                      </div>
                     </div>
-                    <div className="flex gap-0.5">
-                      {[...Array(5)].map((_, i) => (
-                        <Star key={i} className="h-3.5 w-3.5 fill-primary text-primary" />
-                      ))}
-                    </div>
-                    <div className="w-full rounded-xl bg-primary px-3 py-2">
-                      <p className="text-xs font-semibold text-primary-foreground">Free Install</p>
+
+                    {/* Bottom nav */}
+                    <div className="border-t border-gray-200 bg-white px-4 py-2 flex items-center justify-between h-16">
+                      <div className="flex flex-col items-center gap-1">
+                        <Grid3x3 className="h-5 w-5 text-primary" />
+                        <span className="text-xs font-medium text-primary">Dashboard</span>
+                      </div>
+                      <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center shadow-lg">
+                        <Scan className="h-6 w-6 text-white" />
+                      </div>
+                      <div className="flex flex-col items-center gap-1">
+                        <HeartPulse className="h-5 w-5 text-gray-400" />
+                        <span className="text-xs font-medium text-gray-400">Body</span>
+                      </div>
                     </div>
                   </div>
-                  <div className="absolute bottom-3 left-1/2 h-1 w-12 -translate-x-1/2 rounded-full bg-foreground/10" />
                 </div>
               </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Features section */}
+        <section className="mx-auto max-w-6xl px-4 py-20 lg:px-6">
+          <h2 className="text-center text-3xl font-bold tracking-tight text-foreground mb-4">
+            Everything you need to hit your goals
+          </h2>
+          <p className="text-center text-muted-foreground mb-12 max-w-2xl mx-auto">
+            Powerful features to track nutrition, workouts, and body composition all in one place.
+          </p>
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {/* AI Food Scanner */}
+            <div className="group rounded-2xl border border-border/50 bg-card p-6 hover:shadow-lg hover:border-primary/30 transition-all duration-300">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 mb-4 group-hover:bg-primary/20 transition-colors">
+                <Camera className="h-6 w-6 text-primary" />
+              </div>
+              <h3 className="text-lg font-semibold text-foreground mb-2">AI Food Scanner</h3>
+              <p className="text-sm text-muted-foreground">Snap a photo of any meal and get instant calorie, macro, and ingredient breakdowns powered by AI.</p>
+            </div>
+
+            {/* Fuel Score */}
+            <div className="group rounded-2xl border border-border/50 bg-card p-6 hover:shadow-lg hover:border-primary/30 transition-all duration-300">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 mb-4 group-hover:bg-primary/20 transition-colors">
+                <Gauge className="h-6 w-6 text-primary" />
+              </div>
+              <h3 className="text-lg font-semibold text-foreground mb-2">Fuel Score</h3>
+              <p className="text-sm text-muted-foreground">A unique diet quality metric that scores how well your meals align with your fitness goals, not just calories.</p>
+            </div>
+
+            {/* AI Workout Planner */}
+            <div className="group rounded-2xl border border-border/50 bg-card p-6 hover:shadow-lg hover:border-primary/30 transition-all duration-300">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 mb-4 group-hover:bg-primary/20 transition-colors">
+                <Clipboard className="h-6 w-6 text-primary" />
+              </div>
+              <h3 className="text-lg font-semibold text-foreground mb-2">AI Workout Planner</h3>
+              <p className="text-sm text-muted-foreground">Personalized workout routines generated and adjusted based on your progress and goals.</p>
+            </div>
+
+            {/* Body Composition Tracking */}
+            <div className="group rounded-2xl border border-border/50 bg-card p-6 hover:shadow-lg hover:border-primary/30 transition-all duration-300">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 mb-4 group-hover:bg-primary/20 transition-colors">
+                <BarChart3 className="h-6 w-6 text-primary" />
+              </div>
+              <h3 className="text-lg font-semibold text-foreground mb-2">Body Composition Tracking</h3>
+              <p className="text-sm text-muted-foreground">Track body fat %, weight trends, and progress photos over time with visual analytics.</p>
+            </div>
+
+            {/* Daily Progress Dashboard */}
+            <div className="group rounded-2xl border border-border/50 bg-card p-6 hover:shadow-lg hover:border-primary/30 transition-all duration-300">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 mb-4 group-hover:bg-primary/20 transition-colors">
+                <Target className="h-6 w-6 text-primary" />
+              </div>
+              <h3 className="text-lg font-semibold text-foreground mb-2">Daily Progress Dashboard</h3>
+              <p className="text-sm text-muted-foreground">See calories, protein, diet accuracy, and streaks at a glance every day.</p>
+            </div>
+
+            {/* AI Coach Chat */}
+            <div className="group rounded-2xl border border-border/50 bg-card p-6 hover:shadow-lg hover:border-primary/30 transition-all duration-300">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 mb-4 group-hover:bg-primary/20 transition-colors">
+                <MessageCircle className="h-6 w-6 text-primary" />
+              </div>
+              <h3 className="text-lg font-semibold text-foreground mb-2">AI Coach Chat</h3>
+              <p className="text-sm text-muted-foreground">Ask questions and get personalized nutrition and fitness guidance from your AI coach anytime.</p>
             </div>
           </div>
         </section>
