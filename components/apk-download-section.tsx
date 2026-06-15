@@ -1,6 +1,6 @@
 "use client"
 
-import { Download, Smartphone, Star, Zap, MonitorSmartphone } from "lucide-react"
+import { Download, Smartphone, Star, Zap, MonitorSmartphone, Flame, Dumbbell, HeartPulse, Target, MessageCircle, Camera, Gauge, Clipboard, BarChart3, Grid3x3, LogOut, Moon, Menu, Scan } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { usePwaInstall } from "@/hooks/use-pwa-install"
 
@@ -74,27 +74,128 @@ export function ApkDownloadSection() {
           </div>
 
           <div className="flex flex-col items-center gap-4 flex-shrink-0">
-            <div className="relative flex h-[320px] w-[160px] items-center justify-center rounded-[2.5rem] border-4 border-foreground/10 bg-card shadow-2xl shadow-primary/10">
-              <div className="absolute -top-1.5 left-1/2 h-3 w-16 -translate-x-1/2 rounded-full bg-foreground/10" />
-              <div className="flex flex-col items-center gap-3 px-4 text-center">
-                <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10">
-                  <span className="text-3xl font-black text-primary">G</span>
+            <div className="relative flex flex-col h-[500px] w-[250px] rounded-[2.5rem] border-8 border-foreground bg-white shadow-2xl shadow-black/20 overflow-hidden">
+              {/* Status bar */}
+              <div className="bg-foreground text-white px-4 py-1.5 text-xs font-medium flex justify-between items-center h-6">
+                <span>12:41</span>
+                <span>4G • 100%</span>
+              </div>
+
+              {/* App content */}
+              <div className="flex-1 overflow-hidden flex flex-col bg-white">
+                {/* Header */}
+                <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
+                  <div className="flex items-center gap-2">
+                    <div className="w-6 h-6 bg-primary/15 rounded-lg flex items-center justify-center">
+                      <Dumbbell className="h-4 w-4 text-primary" />
+                    </div>
+                    <div className="flex gap-0.5">
+                      <span className="font-bold text-sm text-black">Gain</span>
+                      <span className="font-bold text-sm text-primary">Ai</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Moon className="h-4 w-4 text-gray-600" />
+                    <LogOut className="h-4 w-4 text-gray-600" />
+                    <Menu className="h-4 w-4 text-gray-600" />
+                  </div>
                 </div>
-                <p className="text-sm font-bold text-foreground">GainAi</p>
-                <p className="text-[10px] text-muted-foreground leading-relaxed">
-                  AI Nutrition &amp; Body Analysis
-                </p>
-                <div className="mt-1 flex gap-0.5">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="h-3 w-3 fill-primary text-primary" />
-                  ))}
+
+                {/* Scrollable content */}
+                <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3 text-sm">
+                  {/* Welcome */}
+                  <div>
+                    <h2 className="text-lg font-bold text-black">Welcome back, Prince</h2>
+                    <p className="text-xs text-gray-600 mt-0.5">Here&apos;s your fitness overview</p>
+                  </div>
+
+                  {/* Streak */}
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">🔥</span>
+                    <span className="font-semibold text-black">4<span className="font-normal text-gray-600 ml-1">day streak</span></span>
+                  </div>
+
+                  {/* Workout card */}
+                  <div className="border border-gray-200 rounded-xl p-3 bg-gray-50">
+                    <div className="flex items-start justify-between mb-2">
+                      <div className="flex items-start gap-2 flex-1">
+                        <HeartPulse className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                        <div>
+                          <p className="font-bold text-xs text-black leading-tight">Monday - Lower Strength &amp; Sprint</p>
+                        </div>
+                      </div>
+                      <span className="bg-primary/20 text-primary text-xs font-semibold px-2 py-1 rounded-full whitespace-nowrap ml-2">Leg Power</span>
+                    </div>
+                    <p className="text-xs text-gray-600 ml-7 mb-3">5 exercises · 90 mins</p>
+                    <button className="w-full bg-primary text-white text-xs font-bold py-2 rounded-lg hover:bg-primary/90 transition-colors">View Workout →</button>
+                  </div>
+
+                  {/* Stats grid */}
+                  <div className="grid grid-cols-2 gap-2">
+                    {/* Calories */}
+                    <div className="border border-gray-200 rounded-lg p-2.5 bg-white">
+                      <div className="flex items-center gap-1 mb-1.5">
+                        <Flame className="h-3.5 w-3.5 text-primary" />
+                        <span className="text-xs font-semibold text-gray-600">CALORIES</span>
+                      </div>
+                      <p className="text-lg font-bold text-black">350</p>
+                      <p className="text-xs text-gray-500 mt-0.5">of 2,708 goal</p>
+                      <div className="w-full h-1 bg-gray-200 rounded-full mt-1.5 overflow-hidden">
+                        <div className="h-full w-1/3 bg-primary rounded-full"></div>
+                      </div>
+                    </div>
+
+                    {/* Protein */}
+                    <div className="border border-gray-200 rounded-lg p-2.5 bg-white">
+                      <div className="flex items-center gap-1 mb-1.5">
+                        <Target className="h-3.5 w-3.5 text-primary" />
+                        <span className="text-xs font-semibold text-gray-600">PROTEIN</span>
+                      </div>
+                      <p className="text-lg font-bold text-black">16g</p>
+                      <p className="text-xs text-gray-500 mt-0.5">of 119g goal</p>
+                      <div className="w-full h-1 bg-gray-200 rounded-full mt-1.5 overflow-hidden">
+                        <div className="h-full w-1/3 bg-primary rounded-full"></div>
+                      </div>
+                    </div>
+
+                    {/* Diet Accuracy */}
+                    <div className="border border-gray-200 rounded-lg p-2.5 bg-white">
+                      <div className="flex items-center gap-1 mb-1.5">
+                        <Zap className="h-3.5 w-3.5 text-primary" />
+                        <span className="text-xs font-semibold text-gray-600">ACCURACY</span>
+                      </div>
+                      <p className="text-lg font-bold text-black">64%</p>
+                      <p className="text-xs text-orange-500 font-medium mt-0.5">Need focus</p>
+                      <p className="text-xs text-primary mt-1">↑ +12% Better</p>
+                    </div>
+
+                    {/* Body Fat */}
+                    <div className="border border-gray-200 rounded-lg p-2.5 bg-white">
+                      <div className="flex items-center gap-1 mb-1.5">
+                        <HeartPulse className="h-3.5 w-3.5 text-primary" />
+                        <span className="text-xs font-semibold text-gray-600">BODY FAT</span>
+                      </div>
+                      <p className="text-lg font-bold text-black">10%</p>
+                      <p className="text-xs text-gray-500 mt-0.5">latest reading</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Bottom nav */}
+                <div className="border-t border-gray-200 bg-white px-4 py-2 flex items-center justify-between h-14">
+                  <div className="flex flex-col items-center gap-1">
+                    <Grid3x3 className="h-5 w-5 text-primary" />
+                    <span className="text-xs font-medium text-primary">Dashboard</span>
+                  </div>
+                  <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center shadow-lg">
+                    <Scan className="h-5 w-5 text-white" />
+                  </div>
+                  <div className="flex flex-col items-center gap-1">
+                    <HeartPulse className="h-5 w-5 text-gray-400" />
+                    <span className="text-xs font-medium text-gray-400">Body</span>
+                  </div>
                 </div>
               </div>
-              <div className="absolute bottom-3 left-1/2 h-1 w-10 -translate-x-1/2 rounded-full bg-foreground/10" />
-            </div>
-            <div className="rounded-xl border border-border/50 bg-card px-4 py-2.5 text-center">
-              <p className="text-xs font-semibold text-foreground">Free Install</p>
-              <p className="text-[10px] text-muted-foreground">No App Store needed</p>
             </div>
           </div>
         </div>
