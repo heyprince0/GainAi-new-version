@@ -727,10 +727,10 @@ function MacroRow({
         </span>
         <span className='text-xs text-foreground'>
           <span className='font-semibold'>
-  {Math.round(current)}g
+  {Number(current.toFixed(1))}g
 </span>
 <span className='text-muted-foreground'>
-  / {Math.round(goal)}g
+  / {Number(goal.toFixed(1))}g
 </span>
       </div>
       <Progress value={Math.min(percent, 100)} className='h-2' />
