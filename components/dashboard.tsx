@@ -740,6 +740,8 @@ return ( <div> <div className='mb-1 flex items-center justify-between'> <span cl
     className='h-2'
   />
 </div>
+        )
+}
 
 const calculateGoals = (age: number, weight: number, height: number, goal: string, gender: string) => {
   const bmrConstant = gender === 'Male' ? 5 : -161
